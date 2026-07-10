@@ -15,6 +15,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
     gameView* view;
+    gameLoop* loop;
     Player* wp;
 public:
     MainWindow(Player* p=nullptr,QWidget *parent = nullptr);
