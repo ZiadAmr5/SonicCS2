@@ -7,10 +7,7 @@
 #include <QPen>
 class Player:public QGraphicsRectItem
 {
-    bool leftKeyPressed;
-    bool rightKeyPressed;
-    bool UpKeyPressed;
-    bool DownKeyPressed;
+
     bool jumped;
     double velocityX;
     double velocityY;
@@ -22,8 +19,8 @@ class Player:public QGraphicsRectItem
 public:
     Player(QGraphicsItem* parent = nullptr);
     void physUpdate(bool right ,bool left ,bool jump);
-    void keyPressEvent(QKeyEvent* event);
-    double sendHorizontalSpeed(double vx);
+    //void keyPressEvent(QKeyEvent* event);
+    //double sendHorizontalSpeed(double vx);
 };
 
 #endif // PLAYER_H

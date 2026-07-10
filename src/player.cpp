@@ -38,18 +38,7 @@ Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent) {
 
      }
 }
-void Player:: keyPressEvent(QKeyEvent* event)
-{
-    if (event->key() == Qt::RightArrow)
-    {
-        rightKeyPressed= true;
-         sendHorizontalSpeed(velocityX);
-    }
-    else if (event->key() == Qt::LeftArrow)
-    {
-        leftKeyPressed=true;
-        sendHorizontalSpeed(velocityX);
-    }
 
-}
+
+
 

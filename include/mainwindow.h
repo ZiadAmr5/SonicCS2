@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "GameEngine.h"
+#include <player.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -12,9 +14,11 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-
+    gameView* view;
+    Player* wp;
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(Player* p=nullptr,QWidget *parent = nullptr);
+
     ~MainWindow();
 
 private:
