@@ -6,7 +6,7 @@ gameView::gameView(Player* p ,QWidget* parent ):scene(nullptr), mp(p),QGraphicsV
     scene->setSceneRect(0,0,800,600);
     setFocusPolicy(Qt::StrongFocus);
     scene-> addItem(mp);
-    scaleFactor = scene->width()/320.0;
+    scaleFactor = scene->width()/320.0; //scale factor is unsed for now
     mp->getScaleFactor(scaleFactor);
     setScene(scene);
 
@@ -52,7 +52,7 @@ void gameView::updatePosition()
 
 gameLoop::gameLoop(gameView* gv,Player* p):m_gv(gv),m_p(p)
 {
-    frameRate.start(16);
+    frameRate.start(16); // 1frame = 16 ms to achieve 60 fps
     TimeBetFrames.start();
     connect(&frameRate,&QTimer::timeout,this,&gameLoop::gameTick);
 }

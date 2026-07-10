@@ -13,12 +13,13 @@
 #include<QObject>
 #include <QDebug>
 class gameView;
+//this class handles timers and updates functions every frame, implementation for this class is currently in gameview.cpp, should be moved to its own seperate cpp
 class gameLoop:public QObject
 {
     Q_OBJECT
 private:
     gameView* m_gv;
-    QElapsedTimer TimeBetFrames;
+    QElapsedTimer TimeBetFrames; // will be used to calculate deltatime
     QTimer frameRate;
     Player*m_p;
 public:
@@ -34,14 +35,14 @@ public slots:
 
 class gameView:public QGraphicsView
 {
-     QSet<int>pressedKeys;
+     QSet<int>pressedKeys; // set that stores key inputs, handles multiple presses
     bool leftKeyPressed;
     bool rightKeyPressed;
     bool UpKeyPressed;
     bool DownKeyPressed;
     bool jumped;
     double deltatime;
-    double scaleFactor;
+    double scaleFactor; // unused
     QGraphicsScene* scene;
     Player* mp;
 
