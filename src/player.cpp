@@ -73,7 +73,7 @@ Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent),velocityX(0) ,
          velocityX-=min(abs(velocityX),friction)*sgn(velocityX);
 
      }
-    qDebug() << "velocityX:" << velocityX << "MaxSpeed:" << MaxSpeed << "acceleration:" << acceleration << "Deceleration"<<deceleration<<"deltatime:" << deltatime;
+    //qDebug() << "velocityX:" << velocityX << "MaxSpeed:" << MaxSpeed << "acceleration:" << acceleration << "Deceleration"<<deceleration<<"deltatime:" << deltatime;
 
      if(jump)
      {

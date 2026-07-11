@@ -80,7 +80,7 @@ void gameLoop::gameTick()
     m_gv->updatePosition();
 
 }
-Ray gameLoop::castRayAgainistEdges(const QLineF ray,QVector<QLineF> edges)
+RayHit gameLoop::castRayAgainistEdges(const QLineF ray,QVector<QLineF> edges)
 {
     Ray result;
     qreal closestDistance=ray.length();
@@ -104,10 +104,10 @@ Ray gameLoop::castRayAgainistEdges(const QLineF ray,QVector<QLineF> edges)
     }
     return result;
 }
-Ray gameLoop::GroundSensor(level&l ,QPointF origin,qreal endPoint)
+RayHit gameLoop::GroundSensor(level&l ,QPointF origin,qreal endPoint)
 {
     QLineF ray(origin.x(),origin.y()+endPoint);
-    Ray closest;
+    Rayclosest;
     qreal closestDist=endPoint;
     for(collisionBoundary& b:l.getcollisionBoundaries())
     {
