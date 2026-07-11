@@ -3,7 +3,7 @@
 #include <QDebug>
 using namespace std;
 //quick player rectangle for testing ( I think it is obvious where this came from, except velocityX and y)
-Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent),velocityX(0) ,velocityY(0){
+Player::Player(QGraphicsItem *parent) : Entity(parent),velocityX(0) ,velocityY(0){
     // Define a 40 width x 60 height rectangle placeholder
     setRect(0, 0, 40, 60);
 
@@ -81,6 +81,15 @@ Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent),velocityX(0) ,
      }
 
 }
+
+// --- UML scaffold behaviour (stubs; to be wired into physUpdate/the game loop) ---
+void Player::moveLeft()  { /* TODO: request leftward acceleration */ }
+void Player::moveRight() { /* TODO: request rightward acceleration */ }
+void Player::jump()      { /* TODO: apply jump impulse when grounded */ }
+void Player::spinDash()  { /* TODO: charge + release spin dash */ }
+void Player::collectRing() { rings++; /* TODO: play sfx, update HUD */ }
+void Player::loseRing()  { /* TODO: scatter rings, set i-frames */ }
+void Player::addScore(int points) { score += points; }
 
 
 

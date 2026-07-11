@@ -21,6 +21,26 @@ set(PROJECT_SOURCES
         include/player.h
         include/mainwindow.h
         include/GameEngine.h
+
+        # UML scaffold classes
+        src/GameObject.cpp
+        src/Entity.cpp
+        src/Physics.cpp
+        src/Level.cpp
+        src/Enemy.cpp
+        src/MovingPlatform.cpp
+        src/Spring.cpp
+        src/Spike.cpp
+        src/Ring.cpp
+        include/GameObject.h
+        include/Entity.h
+        include/Physics.h
+        include/Level.h
+        include/Enemy.h
+        include/MovingPlatform.h
+        include/Spring.h
+        include/Spike.h
+        include/Ring.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

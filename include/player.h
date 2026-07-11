@@ -1,14 +1,15 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 #include <QKeyEvent>
-#include <QGraphicsRectItem>
 #include <QBrush>
 #include <QColor>
 #include <QPen>
 #include <cmath>
-class Player:public QGraphicsRectItem
+#include "Entity.h"
+class Player:public Entity
 {
 
+    // --- existing physics state (drives the current working movement) ---
     bool jumped;
     float velocityX;
     float velocityY;
@@ -18,6 +19,16 @@ class Player:public QGraphicsRectItem
     float deltatime;
     float scaleFactor; //see getScaleFactor
     float MaxSpeed = 6*60;
+
+    // --- UML scaffold state (not yet wired into the physics/loop) ---
+    int  rings        = 0;
+    int  score        = 0;
+    int  lives        = 3;
+    bool isGrounded   = false;
+    bool isonWall     = false;
+    bool isonCeiling  = false;
+    bool isRolling    = false;
+    bool isInvincible = false;
 
 
 public:
@@ -41,6 +52,15 @@ public:
     {
         scaleFactor=sf;
     }
+
+    // --- UML scaffold behaviour (stubs) ---
+    void moveLeft();
+    void moveRight();
+    void jump();
+    void spinDash();
+    void collectRing();
+    void loseRing();
+    void addScore(int points);
 
 };
 //return a sign
