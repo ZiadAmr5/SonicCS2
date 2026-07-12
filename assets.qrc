@@ -1,5 +1,6 @@
 <RCC>
-    <qresource prefix="/new/prefix1">
+    <qresource prefix="/assets">
+        <file>assets/testplatform.tmx</file>
         <file>assets/testplatform.png</file>
     </qresource>
 </RCC>

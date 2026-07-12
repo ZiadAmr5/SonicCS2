@@ -6,7 +6,9 @@ gameView::gameView(Player* p ,level* l,QWidget* parent ):scene(nullptr), mp(p),Q
     scene->setSceneRect(0,0,800,600);
     setFocusPolicy(Qt::StrongFocus);
     ml=l;
-    renderLevel(ml->load(":/assets/assets/test.tmx",":/assets/assets/map.png"));
+    //load returns a copy of level, so we make ml point to said copy
+    *ml=ml->load(":/assets/assets/testplatform.tmx",":/assets/assets/testplatform.png");
+    renderLevel(*ml);
     scene-> addItem(mp);
     scaleFactor = scene->width()/320.0; //scale factor is unsed for now
     mp->getScaleFactor(scaleFactor);
@@ -62,11 +64,12 @@ void gameView::renderLevel(const level& lev)
     }
 }
 
-gameLoop::gameLoop(gameView* gv,Player* p):m_gv(gv),m_p(p)
+gameLoop::gameLoop(gameView* gv,Player* p,level* l):m_gv(gv),m_p(p),m_l(l)
 {
     frameRate.start(16); // 1frame = 16 ms to achieve 60 fps
     TimeBetFrames.start();
     connect(&frameRate,&QTimer::timeout,this,&gameLoop::gameTick);
+
 
 }
 
@@ -76,13 +79,18 @@ void gameLoop::gameTick()
     double deltatime= TimeBetFrames.restart()/1000.0;
     m_p->setDeltaTime(deltatime);
     m_gv->setDeltaTime(deltatime);
-    m_p->physUpdate(m_gv->getrightKey(),m_gv->getleftKey(),m_gv->getJump());
+    qreal sensorLength = std::max(10.0, std::abs(m_p->getVerticalSpeed() * deltatime) + 5);
+    RayHit left=GroundSensor(m_l,m_p->getleftSensor(),sensorLength);
+   RayHit right= GroundSensor(m_l,m_p->getrightSensor(),sensorLength);
+    m_p->physUpdate(m_gv->getrightKey(),m_gv->getleftKey(),m_gv->getJump(),left,right);
     m_gv->updatePosition();
+     m_p->updateSensor();
+
 
 }
-Ray gameLoop::castRayAgainistEdges(const QLineF ray,QVector<QLineF> edges)
+RayHit gameLoop::castRayAgainistEdges(const QLineF ray,QVector<QLineF> edges)
 {
-    Ray result;
+    RayHit result;
     qreal closestDistance=ray.length();
     for(const QLineF edge:edges)
     {
@@ -90,31 +98,35 @@ Ray gameLoop::castRayAgainistEdges(const QLineF ray,QVector<QLineF> edges)
         if(ray.intersects(edge,&intersection)==QLineF::BoundedIntersection)
         {
             QLineF distance(ray.p1(),intersection);
-            if(distance<closestDistance)
+            qreal dist =distance.length() ;
+            if(dist<closestDistance)
             {
-                closestDistance=distance; //the new closest distance for future comparisons aganist other edges
+                closestDistance=dist; //the new closest distance for future comparisons aganist other edges
                 result.edge=edge;
                 result.point=intersection;
-                result.distance=distance;
+                result.distance=dist;
 
                 result.hit=true;
             }
 
         }
     }
+    //qDebug()<<"collision detected";
     return result;
+
 }
-Ray gameLoop::GroundSensor(level&l ,QPointF origin,qreal endPoint)
+RayHit gameLoop::GroundSensor(level* l ,QPointF origin,qreal endPoint)
 {
-    QLineF ray(origin.x(),origin.y()+endPoint);
-    Ray closest;
+    QLineF ray(origin ,QPointF(origin.x(),origin.y()+endPoint));
+    RayHit closest;
     qreal closestDist=endPoint;
-    for(collisionBoundary& b:l.getcollisionBoundaries())
+    for(collisionBoundary& b:l->getcollisionBoundaries())
     {
-        Ray hit= castRayAgainistEdges(ray,b.edges);
+        qDebug() << "Rect:" << b.name << b.x << b.y << b.w << b.l;
+        RayHit hit= castRayAgainistEdges(ray,b.edges());
         if(hit.hit&&hit.distance<closestDist)
         {
-            hit.distance=closestDist;
+            closestDist= hit.distance;
             closest=hit;
         }
     }

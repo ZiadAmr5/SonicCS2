@@ -12,11 +12,12 @@ Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent),velocityX(0) ,
     setPen(QPen(Qt::NoPen)); // Removes the black outline border
     qDebug()<<"setting player in position.";
      this->setPos(400, 300);
-    
+   widthsensorRadius= 40/2.0;
+     lengthsensorRadius =60/2.0;
 
 }
 //updates the physics , taken from the sonic physics guide on the website SonicRetro
- void Player:: physUpdate(bool right , bool left ,bool jump)
+ void Player:: physUpdate(bool right , bool left ,bool jump,RayHit A,RayHit B)
 {// might include a case where both left and right are pressed , maybe a feature
      //qDebug()<<"calling the physics function";
      if(right)
@@ -73,14 +74,35 @@ Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent),velocityX(0) ,
          velocityX-=min(abs(velocityX),friction)*sgn(velocityX);
 
      }
-    //qDebug() << "velocityX:" << velocityX << "MaxSpeed:" << MaxSpeed << "acceleration:" << acceleration << "Deceleration"<<deceleration<<"deltatime:" << deltatime;
 
-     if(jump)
+
+         //qDebug()<<"Falling to the ground";
+         if(A.hit||B.hit)
+         {
+             //qDebug()<<"Hit Confirmed";
+             RayHit ground =(A.hit&&(!B.hit||A.distance<B.distance))? A:B;
+             isOnGround=true;
+             velocityY=0;
+             this->setPos(this->pos().x(),ground.point.y()-60);
+
+         }
+
+     else
      {
-
+         isOnGround = false;
+         velocityY+=gravity*deltatime;
+           if(abs(velocityY)>MaxSpeed)
+             velocityY=MaxSpeed;
      }
 
+//qDebug() << "velocityX:" << velocityX <<"VelocityY"<<velocityY<<"Gravity:"<<gravity<< "MaxSpeed:" << MaxSpeed << "acceleration:" << acceleration << "Deceleration"<<deceleration<<"raylength:" << A.distance;
+     qDebug()<<"A.hit:"<<A.hit<<"RayLength:"<<A.distance;
+     qDebug() << "Player pos:" << this->pos() << "leftFoot:" << leftFoot << "rightFoot:" << rightFoot;
+
 }
+
+
+
 
 
 

@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "GameEngine.h"
+#include <GameEngine.h>
 #include <player.h>
 
 QT_BEGIN_NAMESPACE

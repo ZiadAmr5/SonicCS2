@@ -1,5 +1,5 @@
 #include "mainwindow.h"
-#include "./ui_mainwindow.h"
+#include "src/ui_mainwindow.h"
 #include<level.h>
 
 MainWindow::MainWindow(Player*p,QWidget *parent)
@@ -10,8 +10,8 @@ MainWindow::MainWindow(Player*p,QWidget *parent)
     ui->setupUi(this);
      level* l = new level();
     view= new gameView(wp,l,this);
+    loop=new gameLoop(view,wp,l);
     this->setCentralWidget(view);
-    loop=new gameLoop(view,wp);
 
     view->show();
 

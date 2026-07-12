@@ -13,14 +13,7 @@
 #include<QObject>
 #include <QDebug>
 #include <level.h>
-struct Ray
-{
-    bool hit=false;
-    qreal distance;
-    qreal
-
-};
-
+#include<RayHit.h>
 class gameView;
 //this class handles timers and updates functions every frame, implementation for this class is currently in gameview.cpp, should be moved to its own seperate cpp
 class gameLoop:public QObject
@@ -31,15 +24,18 @@ private:
     QElapsedTimer TimeBetFrames; // will be used to calculate deltatime
     QTimer frameRate;
     Player*m_p;
+    level*m_l;
+
 
 public:
-    gameLoop(gameView* gv,Player*p);
-    void castRay();
+    gameLoop(gameView* gv,Player*p,level*l);
+    RayHit castRayAgainistEdges(const QLineF ray,QVector<QLineF> edges);
+    RayHit GroundSensor(level* l ,QPointF origin,qreal endPoint);
     void playertoGroundCollision();
 
 public slots:
 
- void gameTick();
+    void gameTick();
 
 
 
@@ -47,12 +43,12 @@ public slots:
 
 class gameView:public QGraphicsView
 {
-     QSet<int>pressedKeys; // set that stores key inputs, handles multiple presses
+    QSet<int>pressedKeys; // set that stores key inputs, handles multiple presses
     bool leftKeyPressed;
     bool rightKeyPressed;
     bool UpKeyPressed;
     bool DownKeyPressed;
-    bool jumped;
+    bool jumped=false;
     double deltatime;
     double scaleFactor; // unused
     QGraphicsScene* scene;
@@ -61,27 +57,27 @@ class gameView:public QGraphicsView
 public:
     gameView(Player*p = nullptr,level* l=nullptr,QWidget* parent = nullptr);
 
-     void keyPressEvent(QKeyEvent* event);
-     void keyReleaseEvent(QKeyEvent* event);
-     void renderLevel(const level& lev);
-     void setDeltaTime(double dt)
+    void keyPressEvent(QKeyEvent* event);
+    void keyReleaseEvent(QKeyEvent* event);
+    void renderLevel(const level& lev);
+    void setDeltaTime(double dt)
 
-     {
-         deltatime=dt;
-     }
-     bool getrightKey()
-     {
-         return rightKeyPressed;
-     }
-     bool getleftKey()
-     {
-         return leftKeyPressed;
-     }
-     bool getJump()
-     {
-         return jumped;
-     }
-     void updatePosition();
+    {
+        deltatime=dt;
+    }
+    bool getrightKey()
+    {
+        return rightKeyPressed;
+    }
+    bool getleftKey()
+    {
+        return leftKeyPressed;
+    }
+    bool getJump()
+    {
+        return jumped;
+    }
+    void updatePosition();
 
 
 };

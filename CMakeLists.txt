@@ -30,10 +30,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/gameView.cpp
         assets.qrc
         include/level.h
-<<<<<<< HEAD
-=======
         src/level.cpp
->>>>>>> eb1a88bea16188b20eb1593eb07cc46ffd7e865d
+        include/RayHit.h
+
 
     )
 target_include_directories(SonicCS2 PRIVATE include)
@@ -82,3 +81,4 @@ install(TARGETS SonicCS2
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(SonicCS2)
 endif()
+

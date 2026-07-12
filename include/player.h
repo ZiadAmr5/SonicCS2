@@ -6,10 +6,14 @@
 #include <QColor>
 #include <QPen>
 #include <cmath>
+#include <QPointF>
+#include<RayHit.h>
 class Player:public QGraphicsRectItem
 {
 
-    bool jumped;
+    bool jumped=false;
+    //bool midAir;
+    bool isOnGround=false;
     float velocityX;
     float velocityY;
    float acceleration= 0.046875*60*60; // Sonic originally moved at 6 pixels/frame , converting to pixels/second for qt, we multiply by 60. acceleration would be pixel/frame^2 so we multiply by 60 twice
@@ -18,11 +22,19 @@ class Player:public QGraphicsRectItem
     float deltatime;
     float scaleFactor; //see getScaleFactor
     float MaxSpeed = 6*60;
+    float jump=false;
+    float gravity= 0.21875*60;
+    float widthsensorRadius;
+    float lengthsensorRadius;
+    QPointF leftFoot;
+    QPointF rightFoot;
+    QPointF center;
+
 
 
 public:
     Player(QGraphicsItem* parent = nullptr);
-    void physUpdate(bool right ,bool left ,bool jump);
+    void physUpdate(bool right ,bool left ,bool jump,RayHit A,RayHit B);
     //void keyPressEvent(QKeyEvent* event);
     float getHorizontalSpeed()
     {
@@ -41,6 +53,27 @@ public:
     {
         scaleFactor=sf;
     }
+
+    QPointF getPlayerCenter()
+    {
+        return QPointF(this->pos()+QPointF(widthsensorRadius,lengthsensorRadius));
+    }
+    QPointF getleftSensor()
+    {
+        return leftFoot;
+    }
+    QPointF getrightSensor()
+    {
+        return rightFoot;
+    }
+    void updateSensor()
+    {
+        center = getPlayerCenter();
+        leftFoot= center + QPointF(widthsensorRadius,lengthsensorRadius);
+        rightFoot = center+QPointF(-widthsensorRadius,lengthsensorRadius);
+    }
+
+
 
 };
 //return a sign
