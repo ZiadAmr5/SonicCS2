@@ -14,6 +14,7 @@
 #include <QDebug>
 #include <level.h>
 #include<RayHit.h>
+
 class gameView;
 //this class handles timers and updates functions every frame, implementation for this class is currently in gameview.cpp, should be moved to its own seperate cpp
 class gameLoop:public QObject
@@ -30,7 +31,7 @@ private:
 public:
     gameLoop(gameView* gv,Player*p,level*l);
     RayHit castRayAgainistEdges(const QLineF ray,QVector<QLineF> edges);
-    RayHit GroundSensor(level* l ,QPointF origin,qreal endPoint);
+    RayHit castSensors(level* l ,QPointF origin, QPointF directionVector,qreal endPoint);
     void playertoGroundCollision();
 
 public slots:
@@ -49,6 +50,7 @@ class gameView:public QGraphicsView
     bool UpKeyPressed;
     bool DownKeyPressed;
     bool jumped=false;
+    bool jumpHeld =false;
     double deltatime;
     double scaleFactor; // unused
     QGraphicsScene* scene;
@@ -77,7 +79,13 @@ public:
     {
         return jumped;
     }
+    bool isJumpHeld()
+    {
+        return jumpHeld;
+    }
     void updatePosition();
+
+    void clearJump() { jumped = false; }
 
 
 };

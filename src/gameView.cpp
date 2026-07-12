@@ -28,6 +28,14 @@ void gameView::keyPressEvent(QKeyEvent* event)
         leftKeyPressed=true;
         pressedKeys.insert(event->key());
     }
+    else if(event->key()==Qt::Key_Space)
+    {
+        jumped =true;
+        jumpHeld=true;
+        pressedKeys.insert(event->key());
+
+
+    }
 
 }
 void gameView::keyReleaseEvent(QKeyEvent *event)
@@ -45,6 +53,10 @@ void gameView::keyReleaseEvent(QKeyEvent *event)
         leftKeyPressed=false;
         pressedKeys.remove(event->key());
 
+    }
+    else if (event->key()==Qt::Key_Space)
+    {
+        jumpHeld=false;
     }
 }
 void gameView::updatePosition()
@@ -82,7 +94,8 @@ void gameLoop::gameTick()
     qreal sensorLength = std::max(10.0, std::abs(m_p->getVerticalSpeed() * deltatime) + 5);
     RayHit left=GroundSensor(m_l,m_p->getleftSensor(),sensorLength);
    RayHit right= GroundSensor(m_l,m_p->getrightSensor(),sensorLength);
-    m_p->physUpdate(m_gv->getrightKey(),m_gv->getleftKey(),m_gv->getJump(),left,right);
+    m_p->physUpdate(m_gv->getrightKey(),m_gv->getleftKey(),m_gv->getJump(),m_gv->isJumpHeld(),left,right);
+   m_gv->clearJump();
     m_gv->updatePosition();
      m_p->updateSensor();
 
@@ -108,21 +121,22 @@ RayHit gameLoop::castRayAgainistEdges(const QLineF ray,QVector<QLineF> edges)
 
                 result.hit=true;
             }
-
+//this->setPos(this->pos().x() + (velocityX * deltatime), this->pos().y() + (velocityY * deltatime));
         }
     }
     //qDebug()<<"collision detected";
     return result;
 
 }
-RayHit gameLoop::GroundSensor(level* l ,QPointF origin,qreal endPoint)
+RayHit gameLoop::GroundSensor(level* l ,QPointF origin,, QPointF directionVector,qreal endPoint)
 {
-    QLineF ray(origin ,QPointF(origin.x(),origin.y()+endPoint));
+    QPointF rayEnd = origin+(directionVector*endPoint);
+    QLineF ray(origin ,rayEnd);
     RayHit closest;
     qreal closestDist=endPoint;
     for(collisionBoundary& b:l->getcollisionBoundaries())
     {
-        qDebug() << "Rect:" << b.name << b.x << b.y << b.w << b.l;
+        //qDebug() << "Rect:" << b.name << b.x << b.y << b.w << b.l;
         RayHit hit= castRayAgainistEdges(ray,b.edges());
         if(hit.hit&&hit.distance<closestDist)
         {
