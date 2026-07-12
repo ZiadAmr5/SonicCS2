@@ -28,6 +28,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         src/gameView.cpp
+        assets.qrc
+        include/level.h
 
     )
 target_include_directories(SonicCS2 PRIVATE include)
