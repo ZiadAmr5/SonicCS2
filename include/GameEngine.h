@@ -12,6 +12,15 @@
 #include <player.h>
 #include<QObject>
 #include <QDebug>
+#include <level.h>
+struct Ray
+{
+    bool hit=false;
+    qreal distance;
+    qreal
+
+};
+
 class gameView;
 //this class handles timers and updates functions every frame, implementation for this class is currently in gameview.cpp, should be moved to its own seperate cpp
 class gameLoop:public QObject
@@ -22,8 +31,11 @@ private:
     QElapsedTimer TimeBetFrames; // will be used to calculate deltatime
     QTimer frameRate;
     Player*m_p;
+
 public:
     gameLoop(gameView* gv,Player*p);
+    void castRay();
+    void playertoGroundCollision();
 
 public slots:
 
@@ -45,12 +57,13 @@ class gameView:public QGraphicsView
     double scaleFactor; // unused
     QGraphicsScene* scene;
     Player* mp;
-
+    level* ml;
 public:
-    gameView(Player*p = nullptr,QWidget* parent = nullptr);
+    gameView(Player*p = nullptr,level* l=nullptr,QWidget* parent = nullptr);
 
      void keyPressEvent(QKeyEvent* event);
      void keyReleaseEvent(QKeyEvent* event);
+     void renderLevel(const level& lev);
      void setDeltaTime(double dt)
 
      {

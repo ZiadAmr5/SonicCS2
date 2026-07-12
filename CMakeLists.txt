@@ -30,6 +30,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/gameView.cpp
         assets.qrc
         include/level.h
+<<<<<<< HEAD
+=======
+        src/level.cpp
+>>>>>>> eb1a88bea16188b20eb1593eb07cc46ffd7e865d
 
     )
 target_include_directories(SonicCS2 PRIVATE include)
