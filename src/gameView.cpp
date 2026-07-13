@@ -47,6 +47,7 @@ void gameView::keyPressEvent(QKeyEvent* event)
     else if(event->key() == Qt::Key_Space) {
         jumped = true;
         //jumpHeld = true;
+        qDebug()<<"Pressing jump";
         pressedKeys.insert(event->key());
     }
     else if(event->key()==Qt::Key_Z)
@@ -57,7 +58,13 @@ void gameView::keyPressEvent(QKeyEvent* event)
 
 void gameView::keyReleaseEvent(QKeyEvent *event)
 {
-    if(event->key() == Qt::Key_Right) {
+    if(event->isAutoRepeat())
+    {
+        event->accept();
+        return;
+    }
+    if(event->key() == Qt::Key_Right)
+    {
         rightKeyPressed = false;
         pressedKeys.remove(event->key());
     }
@@ -67,6 +74,8 @@ void gameView::keyReleaseEvent(QKeyEvent *event)
     }
     else if (event->key() == Qt::Key_Space) {
         jumpHeld = false;
+        pressedKeys.remove(event->key());
+        QGraphicsView::keyReleaseEvent(event);
     }
     else if(event->key()==Qt::Key_Z)
     {
@@ -126,7 +135,7 @@ void gameLoop::gameTick()
     bool left= m_gv->pressedKeys.contains(Qt::Key_Left);
       bool jumpheld=m_gv-> pressedKeys.contains(Qt::Key_Space);
     bool run=  m_gv->pressedKeys.contains(Qt::Key_Z);
-    // 1. Calculate speeds based on inputs (No sensors passed!)
+
     m_p->physUpdate(right, left,m_gv->getJump(), jumpheld,run);
     m_gv->clearJump(); // Clear jump trigger flag for next frame
 
@@ -139,6 +148,7 @@ void gameLoop::gameTick()
 
     for (QGraphicsItem* item : m_gv->scene->collidingItems(m_p)) // is mario colliding with anything?
     {
+
         if(m_p->collidesWithItem(item))
         {
 
@@ -162,30 +172,49 @@ void gameLoop::gameTick()
 
         // Assume airborne each frame; only a landing (below) re-confirms grounded.
         // Without this, walking off a ledge leaves isOnGround stuck true and gravity never re-applies.
-        m_p->setIsOnGround(false);
+        bool groundFound=false; //will be used to control the isOnGround
+         QRectF PlayerRect= m_p->sceneBoundingRect();
 
-        for(QGraphicsItem* item:m_gv->scene->collidingItems(m_p))
+        for(QGraphicsItem* item:m_gv->scene->collidingItems(m_p)) //compare
         {
             if(m_p->collidesWithItem(item))
             {
-                QRectF blockRect=item->sceneBoundingRect();
-                QRectF PlayerRect= m_p->sceneBoundingRect();
+                if (item == m_p) continue;
+                //later on we should add other types by adding other conditions (coins,enemies,etc)
 
-                if(vy<0)
+               QRectF blockRect=item->sceneBoundingRect();
+
+
+                if(vy<0) // hit a block above you
                 {
                     m_p->setPos(m_p->pos().x(),blockRect.bottom());
                     m_p->setVerticalSpeed(0);
-                        m_p->setIsOnGround(false);
+
                 }
 
-                else if (vy>0)
+                else if (vy>0) //hit a block below you
                 {
                     m_p->setPos(m_p->pos().x(),blockRect.top()-PlayerRect.height());
-                    m_p->setIsOnGround(true);
+                    groundFound=true;
                     m_p->setVerticalSpeed(0);
                 }
             }
         }
+        if(!groundFound)
+        {
+            QRectF groundSensor(PlayerRect.x(),PlayerRect.bottom(),PlayerRect.width(),1.0f); //sensor below the player's feet
+            QList<QGraphicsItem*> itemsUnder = m_gv->scene->items(groundSensor); // store everything that this sensor touches into this list
+            for(QGraphicsItem* item:itemsUnder)
+            if(item!= m_p) //ignore the player, add condition for other stuff
+            {
+                groundFound=true;
+                m_p->setVerticalSpeed(0);
+                break;
+            }
+        }
+            m_p->setIsOnGround(groundFound);
+
+
 
         // 3. Camera follows the player after its position is fully resolved this frame.
         m_gv->updateCamera();

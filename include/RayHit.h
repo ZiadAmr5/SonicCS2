@@ -2,6 +2,7 @@
 #define RAYHIT_H
 #include <QPointF>
 #include<QLineF>
+//this structure is now unused
 struct RayHit
 {
     bool hit=false;

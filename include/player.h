@@ -30,12 +30,12 @@ private:
 
     float acceleration = 225.0f;
     float friction     =450.0f;
-    float gravity      = 1125.0f;
-    float jumpingGravity= 225.0f;
+    float gravity      = 0.45f * 60 * 60;
+    float jumpingGravity= 0.12f * 60 * 60;
 
     float maxSpeedWalk = 90.0f;
     float maxSpeedRun =   150.0f;
-    float maxTerminalVelocity =270.0f;
+    float maxTerminalVelocity= 5.5f * 60;
     float skidDeceleration = 0.125f * 60 * 60;
     float deltatime;
     float scaleFactor; // Unused for now

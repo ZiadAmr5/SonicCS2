@@ -114,7 +114,7 @@ Player::Player(QGraphicsItem *parent) : Entity(parent) ,groundSpeed(0)
         // qDebug()<<"jump is true";
          //we subtract to preserve the speed before the jump, the functions are switched because we want to jump perpendicular to the surface we are on
         float baseJump =240.0f;
-        float momentumBonus= abs(velocityX)*0.4f;
+        float momentumBonus= abs(velocityX)*0.5f;
         //groundSpeed=velocityX;
         velocityY=-(baseJump+momentumBonus);
         isOnGround=false;
@@ -123,17 +123,20 @@ Player::Player(QGraphicsItem *parent) : Entity(parent) ,groundSpeed(0)
 
 
      }
-     else if(isJumping &&!jumpHeld&& velocityY<0)g
-     {
-         velocityY*=0.5;
-         isJumping=false;
-     }
      if (!isOnGround)
      {
+         qDebug()<<"Not on the ground";
          if(jumpHeld&&velocityY <0)
-              velocityY+=jumpingGravity*deltatime;
+         {
+             qDebug()<<"I AM HOLDING JUMP";
+
+             velocityY+=jumpingGravity*deltatime;
+         }
+
+
          else
          {
+             qDebug()<<"ON THE GROUND";
          velocityY+=gravity*deltatime;
          }
          if(velocityY>maxTerminalVelocity)
