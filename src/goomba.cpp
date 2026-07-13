@@ -34,3 +34,4 @@ void Goomba::update()
         moveBy(-speed, 0);
     }
 }
+//
