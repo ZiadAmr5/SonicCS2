@@ -55,7 +55,10 @@ public:
 
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
-    void renderLevel(const level& lev);
+    void renderLevel(level& lev);
+
+    // Scrolls the view to follow the player each frame (clamped to the world bounds).
+    void updateCamera();
 
     void setDeltaTime(double dt) { deltatime = dt; }
 

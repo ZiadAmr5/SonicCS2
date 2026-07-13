@@ -8,8 +8,17 @@
 #include <QPen>
 #include <QtMath>
 #include <QPointF>
+#include "Entity.h"
 
-class Player : public QGraphicsRectItem
+class Enemy;
+class Coin;
+
+// Mario power state (UML: Player.power). Small -> Big -> Fire.
+enum class PowerState { Small, Big, Fire };
+
+// UML: Player -> Entity -> GameObject -> QGraphicsRectItem.
+// The existing Mario physics below is unchanged; the UML gameplay members are added on top.
+class Player : public Entity
 {
 private:
     bool isOnGround = false;
@@ -30,6 +39,12 @@ private:
     float deltatime;
     float scaleFactor; // Unused for now
 
+    // --- UML gameplay state (Mario) — not yet wired into the loop ---
+    int        lives = 3;
+    int        coins = 0;
+    int        score = 0;
+    PowerState power = PowerState::Small;
+
 public:
     Player(QGraphicsItem* parent = nullptr);
 
@@ -47,6 +62,16 @@ public:
     void setVerticalSpeed(float value)   { velocityY = value; }
     void setGroundSpeed(float value)     { groundSpeed = value; }
     void setIsOnGround(bool value)       { isOnGround = value; }
+
+    // --- UML gameplay behaviour (Mario) — stubs to be wired in ---
+    void stompEnemy(Enemy* e);
+    void collectCoin(Coin* c);
+    void powerUp(PowerState newState);
+    void addScore(int points);
+
+    int  getLives() const { return lives; }
+    int  getCoins() const { return coins; }
+    int  getScore() const { return score; }
 };
 
 #endif // PLAYER_H

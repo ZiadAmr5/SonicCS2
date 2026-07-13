@@ -1,9 +1,11 @@
 
 #include <player.h>
+#include "Enemy.h"
+#include "Coin.h"
 #include <QDebug>
 using namespace std;
 //quick player rectangle for testing ( I think it is obvious where this came from, except velocityX and y)
-Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent) ,groundSpeed(0)
+Player::Player(QGraphicsItem *parent) : Entity(parent) ,groundSpeed(0)
 {
     // Define a 40 width x 60 height rectangle placeholder
     setRect(0, 0, 40, 60);
@@ -143,7 +145,14 @@ Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent) ,groundSpeed(0
      //qDebug() << "Player pos:" << this->pos() << "leftFoot:" << leftFoot << "rightFoot:" << rightFoot;
 
 }
-/*SensorGrid Player::getSensorGrid()
+
+// --- UML gameplay behaviour (Mario) — stubs; to be wired into the game loop ---
+void Player::stompEnemy(Enemy* e)          { Q_UNUSED(e); /* TODO: bounce off enemy, e->stomped() */ }
+void Player::collectCoin(Coin* c)          { Q_UNUSED(c); coins++; addScore(100); /* TODO: sfx/HUD */ }
+void Player::powerUp(PowerState newState)  { power = newState; /* TODO: grow/fire visuals */ }
+void Player::addScore(int points)          { score += points; }
+
+/*SensorGrid Player::getSensorGrid():
 {
     SensorGrid grid;
     double w = 40.0;
