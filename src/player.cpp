@@ -16,12 +16,15 @@ Player::Player(QGraphicsItem *parent) : Entity(parent) ,groundSpeed(0)
     qDebug()<<"setting player in position.";
      this->setPos(400, 300);
 
+     health = maxHealth; // start with full health (survive two hits)
+
 }
 //updates the physics , taken from the sonic physics guide on the website SonicRetro
  void Player:: physUpdate(bool right , bool left ,bool jumped,bool jumpHeld,bool runButtonPressed)
 {// might include a case where both left and right are pressed , maybe a feature
      //qDebug()<<"calling the physics function";
      //qDebug()<<"Falling to the ground";
+     tickInvincibility(); // count down i-frames each frame
      bool jumpingThisFrame = jumped && isOnGround;
      double slopeFactor =0.125;
      float currentMaxSpeed= runButtonPressed? maxSpeedRun:maxSpeedWalk;
@@ -156,11 +159,48 @@ Player::Player(QGraphicsItem *parent) : Entity(parent) ,groundSpeed(0)
 }
 
 
-// --- UML gameplay behaviour (Mario) — stubs; to be wired into the game loop ---
-void Player::stompEnemy(Enemy* e)          { Q_UNUSED(e); /* TODO: bounce off enemy, e->stomped() */ }
-void Player::collectCoin(Coin* c)          { Q_UNUSED(c); coins++; addScore(100); /* TODO: sfx/HUD */ }
-void Player::powerUp(PowerState newState)  { power = newState; /* TODO: grow/fire visuals */ }
-void Player::addScore(int points)          { score += points; }
+// --- UML gameplay behaviour (Mario) ---
+
+void Player::addScore(int points) { score += points; }
+
+// Killing an enemy (e.g. stomping a Goomba) increases the score.
+void Player::stompEnemy(Enemy* e) { if (e) e->stomped(); addScore(200); }
+
+// Collecting a coin:
+//  - if not at full health, the coin heals +1 health
+//  - if already at full health (2), the coin gives score instead
+//  - every 100 coins grants an extra life
+void Player::collectCoin(Coin* c)
+{
+    Q_UNUSED(c);
+    coins++;
+
+    if (health < maxHealth) health++;      // gain health
+    else                    addScore(100); // full health -> points instead
+
+    if (coins >= 100) { coins -= 100; lives++; }  // 100 coins = +1 life
+
+    qDebug() << "coin! coins:" << coins << "health:" << health << "score:" << score << "lives:" << lives;
+}
+
+void Player::powerUp(PowerState newState) { power = newState; /* TODO: grow/fire visuals */ }
+
+// Lose one health point. Grants brief invincibility so a single contact costs one hit.
+void Player::takeDamage(int amount)
+{
+    if (isInvincible) return;
+    health -= amount;
+    if (health < 0) health = 0;
+    isInvincible     = true;
+    invincibleFrames = 90; // ~1.5s at 60 FPS
+    qDebug() << "hit! health now:" << health;
+}
+
+void Player::tickInvincibility()
+{
+    if (isInvincible && --invincibleFrames <= 0)
+        isInvincible = false;
+}
 
 
 

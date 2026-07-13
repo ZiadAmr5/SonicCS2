@@ -40,11 +40,16 @@ private:
     float deltatime;
     float scaleFactor; // Unused for now
 
-    // --- UML gameplay state (Mario) — not yet wired into the loop ---
+    // --- UML gameplay state (Mario) ---
     int        lives = 3;
     int        coins = 0;
     int        score = 0;
     PowerState power = PowerState::Small;
+
+    // --- Health / invincibility (survive two hits) ---
+    int  maxHealth        = 2;
+    bool isInvincible     = false;
+    int  invincibleFrames = 0;   // remaining i-frames after taking a hit
 
 public:
     Player(QGraphicsItem* parent = nullptr);
@@ -64,15 +69,21 @@ public:
     void setGroundSpeed(float value)     { groundSpeed = value; }
     void setIsOnGround(bool value)       { isOnGround = value; }
 
-    // --- UML gameplay behaviour (Mario) — stubs to be wired in ---
+    // --- UML gameplay behaviour (Mario) ---
     void stompEnemy(Enemy* e);
     void collectCoin(Coin* c);
     void powerUp(PowerState newState);
     void addScore(int points);
 
-    int  getLives() const { return lives; }
-    int  getCoins() const { return coins; }
-    int  getScore() const { return score; }
+    void takeDamage(int amount = 1) override;   // lose health, with brief i-frames
+    void tickInvincibility();                   // count down i-frames (call once per frame)
+    bool isDead() const { return health <= 0; }
+
+    int  getLives()     const { return lives; }
+    int  getCoins()     const { return coins; }
+    int  getScore()     const { return score; }
+    int  getMaxHealth() const { return maxHealth; }
+    bool getInvincible() const { return isInvincible; }
 };
 
 #endif // PLAYER_H

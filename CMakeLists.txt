@@ -34,6 +34,7 @@ set(PROJECT_SOURCES
         src/Hazard.cpp           include/Hazard.h
         src/MovingPlatform.cpp   include/MovingPlatform.h
         src/Endpoint.cpp         include/Endpoint.h
+        src/goomba.cpp           include/goomba.h
         include/LevelMap.h
 )
 

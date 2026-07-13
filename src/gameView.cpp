@@ -1,7 +1,10 @@
 #include "GameEngine.h"
 #include "LevelMap.h"
 #include "Endpoint.h"
+#include "Coin.h"
+#include "goomba.h"
 #include <QMessageBox>
+#include <QLabel>
 
 gameView::gameView(Player* p, level* l, QWidget* parent)
     : scene(nullptr), mp(p), QGraphicsView(parent),
@@ -32,6 +35,14 @@ gameView::gameView(Player* p, level* l, QWidget* parent)
     scaleFactor = scene->width() / 320.0;
     mp->getScaleFactor(scaleFactor);
     setScene(scene);
+
+    // --- HUD overlay (floats over the view, doesn't scroll with the camera) ---
+    hud = new QLabel(this);
+    hud->setStyleSheet("color: white; background: rgba(0,0,0,140);"
+                       "padding: 4px 8px; font: bold 15px 'Consolas';");
+    hud->move(10, 10);
+    hud->raise();
+    updateHud();
 
     updateCamera(); // frame the player on the very first frame
 }
@@ -120,6 +131,18 @@ void gameView::updateCamera()
     centerOn(camX, camY);
 }
 
+void gameView::updateHud()
+{
+    if (!hud || !mp) return;
+    hud->setText(QStringLiteral("Score: %1    Coins: %2/100    Lives: %3    Health: %4/%5")
+                     .arg(mp->getScore())
+                     .arg(mp->getCoins())
+                     .arg(mp->getLives())
+                     .arg(mp->getHealth())
+                     .arg(mp->getMaxHealth()));
+    hud->adjustSize();
+}
+
 gameLoop::gameLoop(gameView* gv, Player* p, level* l) : m_gv(gv), m_p(p), m_l(l)
 {
     frameRate.start(16);
@@ -136,6 +159,15 @@ void gameLoop::finishLevel()
                              QStringLiteral("\xF0\x9F\x8F\x81  Level Finished!"));
 }
 
+void gameLoop::gameOver()
+{
+    m_finished = true;
+    frameRate.stop(); // freeze the game
+    QMessageBox::information(m_gv,
+                             QStringLiteral("Game Over"),
+                             QStringLiteral("\xF0\x9F\x92\x80  Game Over"));
+}
+
 
 void gameLoop::gameTick()
 {
@@ -150,8 +182,13 @@ void gameLoop::gameTick()
     m_p->physUpdate(right, left,m_gv->getJump(), jumpheld,run);
     m_gv->clearJump(); // Clear jump trigger flag for next frame
 
+    // Patrol every Goomba in the scene.
+    for (QGraphicsItem* it : m_gv->scene->items())
+        if (Goomba* g = dynamic_cast<Goomba*>(it)) g->update();
+
     double vx = m_p->getHorizontalSpeed();
     double vy = m_p->getVerticalSpeed();
+    double oldBottom = m_p->sceneBoundingRect().bottom(); // player's feet before moving (for stomp)
 
    //the entirety of the collision system is here, Axis-Aligned Boundary Box (AXBB) we check for overlaps between the player and blocks then push the player
 
@@ -226,7 +263,39 @@ void gameLoop::gameTick()
         }
             m_p->setIsOnGround(groundFound);
 
+        // --- Enemies: a stomp from above kills the Goomba (+score); side contact hurts the player ---
+        for (QGraphicsItem* item : m_gv->scene->collidingItems(m_p))
+        {
+            Goomba* g = dynamic_cast<Goomba*>(item);
+            if (!g) continue;
 
+            double enemyTop = g->sceneBoundingRect().top();
+            bool stomped = (vy > 0) && (oldBottom <= enemyTop + 8); // came down onto its head
+            if (stomped)
+            {
+                m_gv->scene->removeItem(g);
+                delete g;
+                m_p->addScore(200);          // killing an enemy increases the score
+                m_p->setVerticalSpeed(-250); // bounce off the top
+            }
+            else
+            {
+                m_p->takeDamage(1);          // side contact: lose one health point
+                if (m_p->isDead()) { gameOver(); return; }
+            }
+            break; // resolve one enemy interaction per frame
+        }
+
+        // --- Coins: collect on contact (heal / score / extra-life logic lives in Player) ---
+        for (QGraphicsItem* item : m_gv->scene->collidingItems(m_p))
+        {
+            if (Coin* coin = dynamic_cast<Coin*>(item))
+            {
+                m_p->collectCoin(coin);
+                m_gv->scene->removeItem(coin);
+                delete coin;
+            }
+        }
 
         // 3. Camera follows the player after its position is fully resolved this frame.
         m_gv->updateCamera();
@@ -242,6 +311,8 @@ void gameLoop::gameTick()
                 }
             }
         }
+
+        m_gv->updateHud(); // refresh score / coins / lives / health display
 
         /*if (item == m_p || item->data(0).toString() != "solid") continue; //if not continue
 

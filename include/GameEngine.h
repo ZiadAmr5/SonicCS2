@@ -13,6 +13,7 @@
 #include <level.h>
 
 class gameView;
+class QLabel;
 
 // This class handles frames, ticks, and AABB push-out collisions
 class gameLoop : public QObject
@@ -24,12 +25,13 @@ private:
     QTimer frameRate;
     Player* m_p;
     level* m_l;
-    bool m_finished = false; // set once the player reaches the level endpoint
+    bool m_finished = false; // set once the game ends (win or lose)
 
 public:
     gameLoop(gameView* gv, Player* p, level* l);
 
     void finishLevel(); // stop the loop and show the "level finished" message
+    void gameOver();    // stop the loop and show the "game over" message
 
 public slots:
     void gameTick(); // Core loop managing the two-step (X then Y) physics resolution
@@ -62,6 +64,9 @@ public:
 
     // Scrolls the view to follow the player each frame (clamped to the world bounds).
     void updateCamera();
+
+    QLabel* hud = nullptr;  // on-screen score / coins / lives / health display
+    void updateHud();       // refresh the HUD text from the player
 
     void setDeltaTime(double dt) { deltatime = dt; }
 
