@@ -143,7 +143,7 @@ Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent) ,groundSpeed(0
      //qDebug() << "Player pos:" << this->pos() << "leftFoot:" << leftFoot << "rightFoot:" << rightFoot;
 
 }
-/*SensorGrid Player::getSensorGrid()
+/*SensorGrid Player::getSensorGrid():
 {
     SensorGrid grid;
     double w = 40.0;
