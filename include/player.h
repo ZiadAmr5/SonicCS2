@@ -72,6 +72,9 @@ public:
     int  getLives() const { return lives; }
     int  getCoins() const { return coins; }
     int  getScore() const { return score; }
+    void takeDamage();
+    bool invincible = false;
+    int invincibleFrames = 0;
 };
 
 #endif // PLAYER_H

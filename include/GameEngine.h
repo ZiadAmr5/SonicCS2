@@ -1,5 +1,6 @@
 #ifndef GAMEENGINE_H
 #define GAMEENGINE_H
+#include "Goomba.h"
 
 #include <QTimer>
 #include <QElapsedTimer>
@@ -45,7 +46,10 @@ private:
     double deltatime;
     double scaleFactor;
 
+
 public:
+    Goomba *goomba;
+    Goomba *goomba2;
      QSet<int> pressedKeys;
     QGraphicsScene* scene; // Made public so gameLoop can easily read scene->collidingItems
     Player* mp;
@@ -69,5 +73,9 @@ public:
 
     void clearJump()    { jumped = false; }
 };
+
+
+
+
 
 #endif // GAMEENGINE_H

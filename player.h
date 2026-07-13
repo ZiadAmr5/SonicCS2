@@ -1,11 +1,11 @@
 #ifndef PLAYER_H
 #define PLAYER_H
-#include <QKeyEvent>
-#include <QGraphicsRectItem>
 #include <QBrush>
 #include <QColor>
+#include <QGraphicsRectItem>
+#include <QKeyEvent>
 #include <QPen>
-class Player:public QGraphicsRectItem
+class Player : public QGraphicsRectItem
 {
     bool leftKeyPressed;
     bool rightKeyPressed;
@@ -16,13 +16,13 @@ class Player:public QGraphicsRectItem
     double velocityY;
     double accelration;
     int direction;
-    double friction=0.04;
+    double friction = 0.04;
     double MaxSpeed = 6.0;
 
 public:
-    Player(QGraphicsItem* parent = nullptr);
-    void physUpdate(bool right ,bool left ,bool jump);
-    void keyPressEvent(QKeyEvent* event);
+    Player(QGraphicsItem *parent = nullptr);
+    void physUpdate(bool right, bool left, bool jump);
+    void keyPressEvent(QKeyEvent *event);
     double sendHorizontalSpeed(double vx);
 };
 
