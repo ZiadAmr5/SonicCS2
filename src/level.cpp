@@ -1,108 +1,39 @@
-#include <level.h>
-#include <QFile>
-#include <QXmlStreamReader>
-#include <QLatin1StringView>
-#include <QDebug>
+#include "level.h"
 
-level level::load(const QString& tmxPath, const QString& imgPath)
+void level::loadFromUiScene(QGraphicsScene* scene)
 {
-    level lev;
-    lev.m_map = QPixmap(imgPath);
-    QFile file(tmxPath);
+    // Clear out any old level memory
+    collisionBoundaries.clear();
 
-    if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    // 1. Set world bounds to match whatever dimensions you gave the UI scene
+    this->widthpx = scene->sceneRect().width();
+    this->lengthpx = scene->sceneRect().height();
+
+    // 2. Loop through every single object painted on your UI workspace canvas
+    for (QGraphicsItem* item : scene->items())
     {
-        qWarning() << "Could not open tmx file" << tmxPath;
-        return lev;
-    }
-
-    QXmlStreamReader xml(&file);
-    int tileWidth = 0;
-    int tileLength = 0;
-    int mapWidthTiles = 0;
-    int mapLengthTiles = 0;
-
-    while(!xml.atEnd() && !xml.hasError())
-    {
-        xml.readNext();
-
-        // Safe evaluation pattern: check states explicitly on the current token
-        if(xml.isStartElement())
+        // 3. For Mario, look for standard rectangle blocks
+        if (QGraphicsRectItem* rectItem = qgraphicsitem_cast<QGraphicsRectItem*>(item))
         {
-            if(xml.name() == QLatin1StringView("map"))
-            {
-                tileWidth = xml.attributes().value("tilewidth").toInt();
-                tileLength = xml.attributes().value("tileheight").toInt();
-                mapWidthTiles = xml.attributes().value("width").toInt();
-                mapLengthTiles = xml.attributes().value("height").toInt();
-                lev.widthpx = tileWidth * mapWidthTiles;
-                lev.lengthpx = tileLength * mapLengthTiles;
-            }
-            else if(xml.name() == QLatin1StringView("objectgroup"))
-            {
-                while(!xml.atEnd() && !xml.hasError())
-                {
-                    xml.readNext();
+            // Optional: Skip the background image or the player rectangle itself!
+            if (rectItem->data(0).toString() == "player") continue;
 
-                    if(xml.isEndElement() && xml.name() == QLatin1StringView("objectgroup"))
-                    {
-                        break;
-                    }
+            collisionBoundary boundary;
+            boundary.shape = collisionBoundary::Rectangle;
 
-                    if(xml.isStartElement() && xml.name() == QLatin1StringView("object"))
-                    {
-                        collisionBoundary b;
-                        b.w = xml.attributes().value("width").toDouble();
-                        b.l = xml.attributes().value("height").toDouble();
-                        b.name = xml.attributes().value("name").toString();
-                        b.x = xml.attributes().value("x").toDouble();
-                        b.y = xml.attributes().value("y").toDouble();
-                        b.shape = collisionBoundary::Rectangle;
+            // Map the item's local coordinates to the true scene space coordinates
+            QRectF sceneRect = rectItem->mapToScene(rectItem->rect()).boundingRect();
 
-                        while (!xml.atEnd() && !xml.hasError())
-                        {
-                            xml.readNext();
+            boundary.x = sceneRect.x();
+            boundary.y = sceneRect.y();
+            boundary.w = sceneRect.width();
+            boundary.l = sceneRect.height();
 
-                            if (xml.isEndElement() && xml.name() == QLatin1StringView("object")) {
-                                break;
-                            }
+            // Store properties from the UI editor's property sheets if needed
+            boundary.name = rectItem->data(1).toString().isEmpty() ? "solid_block" : rectItem->data(1).toString();
 
-                            if (xml.isStartElement())
-                            {
-                                if (xml.name() == QLatin1StringView("polygon") || xml.name() == QLatin1StringView("polyline"))
-                                {
-                                    b.shape = collisionBoundary::Polygon;
-                                    QString pointsAttr = xml.attributes().value("points").toString();
-                                    QStringList pointPairs = pointsAttr.split(QLatin1Char(' '));
-
-                                    for (const QString& pair : pointPairs)
-                                    {
-                                        QStringList coords = pair.split(QLatin1Char(','));
-                                        if (coords.size() == 2)
-                                        {
-                                            qreal posX = b.x + coords[0].toDouble();
-                                            qreal posY = b.y + coords[1].toDouble();
-                                            b.points.append(QPointF(posX, posY));
-                                        }
-                                    }
-                                }
-                                else if (xml.name() == QLatin1StringView("property"))
-                                {
-                                    QString propName = xml.attributes().value("name").toString();
-                                    QString propValue = xml.attributes().value("value").toString();
-                                    b.properties.insert(propName, propValue);
-                                }
-                            }
-                        }
-                        lev.collisionBoundaries.append(b);
-                    }
-                }
-            }
+            // Push it into your existing vector array
+            collisionBoundaries.append(boundary);
         }
     }
-
-    if(xml.hasError())
-        qWarning() << "Parsing error:" << xml.errorString();
-
-    return lev;
 }

@@ -1,5 +1,6 @@
 #ifndef PLAYER_H
 #define PLAYER_H
+
 #include <QKeyEvent>
 #include <QGraphicsRectItem>
 #include <QBrush>
@@ -7,91 +8,45 @@
 #include <QPen>
 #include <QtMath>
 #include <QPointF>
-#include<RayHit.h>
-class Player:public QGraphicsRectItem
+
+class Player : public QGraphicsRectItem
 {
+private:
+    bool isOnGround = false;
+    bool isJumping = false;
 
-    //bool jump=false;
-    //bool midAir;
-    bool isOnGround=false;
-    bool isJumping;
-    float velocityX;
-    float velocityY;
-    float groundSpeed;
-   float acceleration= 0.046875*60*60; // Sonic originally moved at 6 pixels/frame , converting to pixels/second for qt, we multiply by 60. acceleration would be pixel/frame^2 so we multiply by 60 twice
-    float deceleration=0.5*60*60;
-    float friction=0.046875*60;
+    float velocityX = 0.0f;
+    float velocityY = 0.0f;
+    float groundSpeed = 0.0f;
+
+    float acceleration = 0.0375f * 60 * 60;
+    float friction     =0.05f * 60 * 60;
+    float gravity      = 0.1166f * 60 * 60;
+
+    float maxSpeedWalk = 90.0f;
+    float maxSpeedRun =   150.0f;
+    float maxTerminalVelocity =4.0f * 60;
+    float skidDeceleration = 0.125f * 60 * 60;
     float deltatime;
-    float scaleFactor; //see getScaleFactor
-    float MaxSpeed = 6*60;
-    float maxFallSpeed;
-    float jumpForce=6.5 * 60;
-    float gravity= 0.21875*60*60;
-    float widthsensorRadius;
-    float lengthsensorRadius;
-    qreal groundAngle;
-    QPointF leftFoot;
-    QPointF rightFoot;
-    QPointF center;
-    enum collisionMode{
-        floor=0,
-    rightWall=1,
-    leftWall=2,
-    ceiling=3,
-       };
-
-
+    float scaleFactor; // Unused for now
 
 public:
     Player(QGraphicsItem* parent = nullptr);
-    void physUpdate(bool right ,bool left ,bool jumped,bool jumpHeld,RayHit A,RayHit B);
-    //void keyPressEvent(QKeyEvent* event);
-    float getHorizontalSpeed()
-    {
-        return velocityX;
-    }
-    float getVerticalSpeed()
-    {
-        return velocityY;
-    }
-    void setDeltaTime(double dt)
-    {
-        deltatime =dt;
-    }
-    //this function was to be used to scale from the original 320x225 on the genesis, for now it is unused
-    void getScaleFactor(float sf)
-    {
-        scaleFactor=sf;
-    }
-
-    QPointF getPlayerCenter()
-    {
-        return QPointF(this->pos()+QPointF(widthsensorRadius,lengthsensorRadius));
-    }
-    QPointF getleftSensor()
-    {
-        return leftFoot;
-    }
-    QPointF getrightSensor()
-    {
-        return rightFoot;
-    }
-    void updateSensor()
-    {
-        center = getPlayerCenter();
-        leftFoot= center + QPointF(widthsensorRadius,lengthsensorRadius);
-        rightFoot = center+QPointF(-widthsensorRadius,lengthsensorRadius);
-    }
 
 
+    void physUpdate(bool right, bool left, bool jumped, bool jumpHeld,bool runButtonPressed);
 
+    float getHorizontalSpeed() const { return velocityX; }
+    float getVerticalSpeed()   const { return velocityY; }
+    bool getIsOnGround()       const { return isOnGround; }
 
+    void setDeltaTime(double dt)   { deltatime = dt; }
+    void getScaleFactor(float sf)  { scaleFactor = sf; }
+
+    void setHorizontalSpeed(float value) { velocityX = value; }
+    void setVerticalSpeed(float value)   { velocityY = value; }
+    void setGroundSpeed(float value)     { groundSpeed = value; }
+    void setIsOnGround(bool value)       { isOnGround = value; }
 };
-//return a sign
-template <class T>
-T sgn(T value)
-{
-    return value>0? 1:-1;
-}
 
 #endif // PLAYER_H

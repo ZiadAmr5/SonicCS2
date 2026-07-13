@@ -13,42 +13,46 @@ Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent) ,groundSpeed(0
     setPen(QPen(Qt::NoPen)); // Removes the black outline border
     qDebug()<<"setting player in position.";
      this->setPos(400, 300);
-   widthsensorRadius= 40/2.0;
-     lengthsensorRadius =60/2.0;
 
 }
 //updates the physics , taken from the sonic physics guide on the website SonicRetro
- void Player:: physUpdate(bool right , bool left ,bool jumped,bool jumpHeld,RayHit A,RayHit B)
+ void Player:: physUpdate(bool right , bool left ,bool jumped,bool jumpHeld,bool runButtonPressed)
 {// might include a case where both left and right are pressed , maybe a feature
      //qDebug()<<"calling the physics function";
      //qDebug()<<"Falling to the ground";
      bool jumpingThisFrame = jumped && isOnGround;
      double slopeFactor =0.125;
+     float currentMaxSpeed= runButtonPressed? maxSpeedRun:maxSpeedWalk;
+     float currentAcceleration= isOnGround? acceleration:(acceleration*0.5f);
+     float currentSkidding=isOnGround? skidDeceleration:(skidDeceleration*0.5f);
 
      if(right)
     {
 
 
-         //going left then pressing right
-         if(groundSpeed<0)
-         {
-             groundSpeed+=deceleration*deltatime; //scale per deltatime
 
-         if(groundSpeed>=0)
+         //going left then pressing right
+         if(velocityX<0)
+         {
+             velocityX+=currentSkidding*deltatime; //scale per deltatime
+
+         if(velocityX>0)
             {
-             groundSpeed=0.5;  //this makes it so that when the player turns, they would start with a speed = 0.5
+             velocityX=0.5f;  //this makes it so that when the player turns, they would start with a speed = 0.5
             }
          }
          //going right
-         else if(groundSpeed<MaxSpeed)
+         else if(velocityX<currentMaxSpeed)
          {
-             groundSpeed+=acceleration*deltatime;
-             if (!isOnGround && groundSpeed >= MaxSpeed) groundSpeed = MaxSpeed; // mid air
+             velocityX+=currentAcceleration*deltatime;
+             //if (!isOnGround && velocityX >= currentSpeed)velocityX = currentSpeed; // mid air
              /*if(groundSpeed>=MaxSpeed) //this is a speed cap, should be removed later on when slopes are implemented
              {
                  groundSpeed=MaxSpeed;
              }
             */
+             if(velocityX>currentMaxSpeed)
+                 velocityX=currentMaxSpeed;
          }
 
 
@@ -56,19 +60,19 @@ Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent) ,groundSpeed(0
      }
      else if (left)
      {//going right then pressing left
-         if(groundSpeed>0)
+         if(velocityX>0)
          {
-         groundSpeed-=deceleration*deltatime;
-         if(groundSpeed<=0)
+         velocityX-=currentSkidding*deltatime;
+         if(velocityX<=0)
              {
-             groundSpeed=-0.5;
+           velocityX=-0.5f;
              }
          }
          //going left
-         else if(groundSpeed>-MaxSpeed)
+         else if(velocityX>-currentMaxSpeed)
          {
-             groundSpeed-=acceleration*deltatime;
-             if (!isOnGround && groundSpeed <= -MaxSpeed) groundSpeed = -MaxSpeed;
+            velocityX-=currentAcceleration*deltatime;
+            // if (!isOnGround && groundSpeed <= -MaxSpeed) groundSpeed = -MaxSpeed;
 
              /*if(groundSpeed<=-MaxSpeed)
                  {
@@ -82,134 +86,126 @@ Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent) ,groundSpeed(0
      else
          //apply friction, we subract from the smallest value  so we don't go past zero
      {
+         if(isOnGround)
 
-         groundSpeed-=min(abs(groundSpeed),friction)*deltatime*sgn(velocityX);
-
-     }
-     if((A.hit || B.hit) && velocityY >= 0)
-     {
-         //qDebug()<<"Hit Confirmed";
-         RayHit ground =(A.hit&&(!B.hit||A.distance<B.distance))? A:B;// gets the shortest ray from the two
-
-         this->groundAngle = qAtan2(ground.edge.dy(),ground.edge.dx());
-         double Angle= this->groundAngle*180.0/M_PI;
-         //groundSpeed+=slopeFactor;
-         //velocityY= groundSpeed* qSin(this->groundAngle);
-         //velocityX=groundSpeed*qCos(this->groundAngle);
-         collisionMode currentMode= getCollisionMode(Angle);
-
-
-         bool isSlippingOrFalling = false;
-         if (currentMode == leftWall || currentMode == rightWall) {
-             if (qAbs(groundSpeed) < 2.5) isSlippingOrFalling = true;
-         } else if (currentMode == ceiling) {
-             if (qAbs(groundSpeed) < 2.5) {
-                 isSlippingOrFalling = true;
-                 groundSpeed = 0; // Drop straight down safely
+         {
+         if(velocityX>0)
+            {
+             velocityX-=friction *deltatime;
+             if(velocityX<0)
+                 velocityX=0;
              }
+         else if ( velocityX<0)
+             {
+             velocityX+=friction*deltatime;
+             if(velocityX>0)
+                 velocityX=0;
+            }
          }
-
-         if (isSlippingOrFalling)
-         {
-             // Detach from the surface and drop straight into the gravity pipeline
-             isOnGround = false;
-             groundAngle = 0.0;
-             velocityY += gravity * deltatime;
-             if (velocityY > MaxSpeed)        velocityY = MaxSpeed;
-             else if (velocityY < -MaxSpeed) velocityY = -MaxSpeed;
-             velocityX = groundSpeed;
-         }
-         else
-         {
-             isOnGround = true;
-
-             // Classic SPG Slope Factor Resistance
-             groundSpeed += slopeFactor * qSin(this->groundAngle);
-             // Clean vector projection tracking raw radians
-             velocityX = groundSpeed * qCos(this->groundAngle);
-             velocityY = groundSpeed * qSin(this->groundAngle);
-
-
-         }
-
-         double playerWidth=40;
-         double playerLength=60;
-         switch(currentMode)
-         {
-         case (floor):
-             this->setPos(this->pos().x(), ground.point.y() - playerLength);
-             break;
-         case (leftWall):
-             this->setPos(ground.point.x(), this->pos().y());
-             break;
-         case (rightWall):
-             this->setPos(ground.point.x() - playerWidth, this->pos().y());
-             break;
-         case (ceiling):
-             this->setPos(this->pos().x(), ground.point.y());
-             break;
-         }
-
-
-
-
-
-
-
-         /*isOnGround=true;
-         groundAngle = qAtan2(ground.edge.dy(),ground.edge.dx());
-         groundSpeed -= slopeFactor * qSin(groundAngle);
-         velocityX = groundSpeed *qCos(groundAngle);
-         velocityY=groundSpeed *qSin(groundAngle); // add negative if behavior changes
-         if (abs(groundAngle) < 0.001) {
-             velocityY = 0;
-         }
-         this->setPos(this->pos().x(),ground.point.y()-60);
-        */
 
      }
-     else
-     {
-         isOnGround = false;
-         if (qAbs(groundSpeed) < 2.5) {
-             groundAngle = 0.0;
-         }
-         velocityY+=gravity*deltatime;
-         if(velocityY>MaxSpeed)
-             velocityY=MaxSpeed;
-         else if (velocityY<-MaxSpeed)
-             velocityY=-MaxSpeed;
 
-         velocityX=groundSpeed;
-
-     }
 
 
      if(jumpingThisFrame)
      {
         // qDebug()<<"jump is true";
          //we subtract to preserve the speed before the jump, the functions are switched because we want to jump perpendicular to the surface we are on
-         double launchAngle= this->groundAngle-(M_PI/2.0);
-         velocityX-=jumpForce*qSin(launchAngle);
-        velocityY-=jumpForce*qCos(launchAngle);
-         isJumping=true;
-         isOnGround=false;
+        float baseJump =200.0f;
+        float momentumBonus= abs(velocityX)*0.4f;
+        //groundSpeed=velocityX;
+        velocityY=-(baseJump+momentumBonus);
+        isOnGround=false;
+        isJumping=true;
+
+
      }
      else if(isJumping &&!jumpHeld&& velocityY<0)
      {
          velocityY*=0.5;
          isJumping=false;
      }
+     if (!isOnGround)
+     {
+         velocityY+=gravity*deltatime;
+         if(velocityY>maxTerminalVelocity)
+         {
+             velocityY=maxTerminalVelocity;
+         }
+     }
 
 
 
 
 
-     qDebug() << "velocityX:" << velocityX <<"VelocityY"<<velocityY<<"Gravity:"<<gravity<< "MaxSpeed:" << MaxSpeed << "acceleration:" << acceleration << "Deceleration"<<deceleration<<"raylength:" << A.distance<<"GroundAngle: "<<groundAngle;
+     qDebug() << "velocityX:" << velocityX <<"VelocityY"<<velocityY<<"Gravity:"<<gravity<< "MaxSpeed:" << currentMaxSpeed << "acceleration:" << acceleration << "Deceleration"<<currentSkidding;
      //qDebug()<<"A.hit:"<<A.hit<<"RayLength:"<<A.distance;
      //qDebug() << "Player pos:" << this->pos() << "leftFoot:" << leftFoot << "rightFoot:" << rightFoot;
 
 }
+/*SensorGrid Player::getSensorGrid()
+{
+    SensorGrid grid;
+    double w = 40.0;
+    double h = 60.0;
+    double px = this->pos().x();
+    double py = this->pos().y();
+
+    double inset = 4.0;
+    double wallInset = 10.0;
+    grid.floorLength = 14.0 + (this->isOnGround ? 16.0 : 0.0);
+
+    // Determine base directions based on orientation mode
+    collisionMode mode = getcollisionMode(this->getGroundAngleDegrees());
+    if (mode == collisionMode::floor) {
+        grid.downDir = QPointF(0, 1);    grid.leftDir = QPointF(-1, 0);
+    } else if (mode == collisionMode::rightWall) {
+        grid.downDir = QPointF(1, 0);    grid.leftDir = QPointF(0, 1);
+    } else if (mode == collisionMode::ceiling) {
+        grid.downDir = QPointF(0, -1);   grid.leftDir = QPointF(1, 0);
+    } else if (mode == collisionMode::leftWall) {
+        grid.downDir = QPointF(-1, 0);   grid.leftDir = QPointF(0, -1);
+    }
+
+    grid.upDir    = -grid.downDir;
+    grid.rightDir = QPointF(-grid.downDir.y(), grid.downDir.x());
+    grid.leftDir  = -grid.rightDir;
+
+    // Standard baseline center offset calculation
+    QPointF center(px + w/2.0, py + h/2.0);
+
+    // Ground Points
+    QPointF gBase = center + (grid.downDir * (h/2.0));
+    grid.originA = gBase - (grid.rightDir * 16.0);
+    grid.originB = gBase + (grid.rightDir * 16.0);
+
+    // Ceiling Points
+    QPointF cBase = center + (grid.upDir * (h/2.0));
+    grid.originE = cBase - (grid.rightDir * 16.0);
+    grid.originF = cBase + (grid.rightDir * 16.0);
+
+    // Wall Points
+    grid.originC = center + (grid.leftDir * (w/2.0))  + (grid.downDir * ((h/2.0) - wallInset));
+    grid.originD = center + (grid.rightDir * (w/2.0)) + (grid.downDir * ((h/2.0) - wallInset));
+
+    return grid;
+}
+double Player::getGroundAngleDegrees()
+{
+    // 1. Convert raw radians into standard degrees
+    double degrees = this->groundAngle * 180.0 / M_PI;
+
+    // 2. Normalize negative angles (e.g., -90 degrees becomes 270 degrees)
+    while (degrees < 0.0) {
+        degrees += 360.0;
+    }
+    while (degrees >= 360.0) {
+        degrees -= 360.0;
+    }
+
+    return degrees;
+}
+*/
 
 
 

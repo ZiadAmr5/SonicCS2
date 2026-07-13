@@ -6,29 +6,26 @@
 #include <QVector>
 #include <QPointF>
 #include <QLineF>
-
 #include <QMap>
-struct collisionBoundary
-{
-    qreal x,y,w,l;
+#include <QGraphicsScene>  // 🌟 Added for UI Scene parsing
+#include <QGraphicsItem>   // 🌟 Added to inspect visual objects
 
-
-    QString name; // name of the object we check for collision
-    QMap<QString,QString> properties;
-    enum shapeType{Rectangle,Polygon};
+struct collisionBoundary {
+    qreal x, y, w, l;
+    QString name;
+    QMap<QString, QString> properties;
+    enum shapeType { Rectangle, Polygon };
 
     QVector<QPointF> points;
     shapeType shape = Rectangle;
-    QVector<QLineF> edges()
-    {
-        QVector <QLineF> result;
-        if(shape ==Rectangle)
-        {
+
+    QVector<QLineF> edges() {
+        QVector<QLineF> result;
+        if (shape == Rectangle) {
             QPointF topLeft(x, y);
             QPointF topRight(x + w, y);
             QPointF botRight(x + w, y + l);
             QPointF botLeft(x, y + l);
-              // mixing both wrong
 
             result = {
                 QLineF(topLeft, topRight),
@@ -37,51 +34,31 @@ struct collisionBoundary
                 QLineF(botLeft, topLeft)
             };
         }
-
-        else if (shape==Polygon)
-        {
-            for(int i=0;i<points.size();i++)
-            {
+        else if (shape == Polygon) {
+            for (int i = 0; i < points.size(); i++) {
                 QPointF a = points[i];
-                QPointF b = points[(i+1)%points.size()]; //circle back to the first point
-                result.append(QLineF(a,b));
+                QPointF b = points[(i + 1) % points.size()];
+                result.append(QLineF(a, b));
             }
-
         }
         return result;
     }
-    
-    
-
 };
 
-class level
-{
-    int widthpx=0;
-    int lengthpx=0;
+class level {
+    int widthpx = 0;
+    int lengthpx = 0;
     QVector<collisionBoundary> collisionBoundaries;
     QPixmap m_map;
 
 public:
+    // 🌟 CHANGED: Instead of a TMX path, we load straight from your visual UI scene
+    void loadFromUiScene(QGraphicsScene* scene);
 
-    level load(const QString& tmxPath,const QString& imgPath); // path to the tmx and the png
-    int getwidthPx()
-    {
-        return widthpx;
-    }
-    int getlengthPx()
-    {
-        return lengthpx;
-    }
-    QPixmap getMap()const
-    {
-        return m_map;
-    }
-    QVector<collisionBoundary> getcollisionBoundaries() const
-    {
-        return collisionBoundaries;
-    }
-
+    int getwidthPx() const { return widthpx; }
+    int getlengthPx() const { return lengthpx; }
+    QPixmap getMap() const { return m_map; }
+    QVector<collisionBoundary>& getcollisionBoundaries() { return collisionBoundaries; }
 };
 
 #endif // LEVEL_H
