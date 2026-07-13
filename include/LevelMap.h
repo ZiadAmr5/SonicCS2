@@ -7,6 +7,7 @@
 #include <QPen>
 #include <QStringList>
 #include "player.h"
+#include "Endpoint.h"
 
 // =============================================================================
 //  ====>  EDIT YOUR LEVEL HERE  <====
@@ -14,6 +15,7 @@
 //  Each line below is one row of the level, from top to bottom.
 //    'X' = solid block (ground / platform / wall)
 //    'P' = player start position (only the first 'P' is used)
+//    'E' = end goal — touching it finishes the level (stack several for a tall flag)
 //    ' ' = empty space (sky)
 //
 //  - One character = one TILE (default 40 px). The player is 40x60 (~1.5 tiles).
@@ -32,9 +34,9 @@ static const QStringList LEVEL_MAP = {
     "                 XXXX                             ", //  6
     "                     XXXXX                        ", //  7  mid platform
     "                                                  ", //  8
-    "   P                                              ", //  9  <- player start
-    "XXXXXXXXX                    XXXXXXXX             ", // 10  start hill + block
-    "XXXXXXXXXXXXXXXXX                    XXXXXXXX     ", // 11
+    "   P                                           E  ", //  9  <- player start / goal flag
+    "XXXXXXXXX                    XXXXXXXX          E  ", // 10  start hill + block
+    "XXXXXXXXXXXXXXXXX                    XXXXXXXX  E  ", // 11  goal 'E' standing on the ground
     "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX", // 12  ground (gap = pit)
     "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX", // 13  ground
     "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX", // 14  ground
@@ -74,6 +76,16 @@ inline void buildLevel(QGraphicsScene* scene, Player* player, double tile = 40.0
                 block->setPen(QPen(groundEdge, 1));
                 block->setData(0, QStringLiteral("solid"));
                 scene->addItem(block);
+            }
+            else if (ch == QLatin1Char('E'))
+            {
+                auto* goal = new Endpoint();
+                goal->setRect(0, 0, tile, tile);
+                goal->setPos(c * tile, r * tile);
+                goal->setBrush(QBrush(QColor(40, 180, 70)));  // green goal
+                goal->setPen(QPen(QColor(20, 110, 40), 2));
+                goal->setData(0, QStringLiteral("endpoint"));
+                scene->addItem(goal);
             }
             else if (ch == QLatin1Char('P') && player)
             {

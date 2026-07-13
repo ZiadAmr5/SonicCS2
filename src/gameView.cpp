@@ -1,5 +1,7 @@
 #include "GameEngine.h"
 #include "LevelMap.h"
+#include "Endpoint.h"
+#include <QMessageBox>
 
 gameView::gameView(Player* p, level* l, QWidget* parent)
     : scene(nullptr), mp(p), QGraphicsView(parent),
@@ -125,6 +127,15 @@ gameLoop::gameLoop(gameView* gv, Player* p, level* l) : m_gv(gv), m_p(p), m_l(l)
     connect(&frameRate, &QTimer::timeout, this, &gameLoop::gameTick);
 }
 
+void gameLoop::finishLevel()
+{
+    m_finished = true;
+    frameRate.stop(); // freeze the game
+    QMessageBox::information(m_gv,
+                             QStringLiteral("Level Complete"),
+                             QStringLiteral("\xF0\x9F\x8F\x81  Level Finished!"));
+}
+
 
 void gameLoop::gameTick()
 {
@@ -151,6 +162,7 @@ void gameLoop::gameTick()
 
         if(m_p->collidesWithItem(item))
         {
+            if(item->data(0).toString()!="solid") continue; // only solid blocks are walls (skip goal + debug outlines)
 
             QRectF blockRect = item->sceneBoundingRect(); // boundaries of the block
             QRectF playerRect = m_p->sceneBoundingRect(); //boundaries of the player
@@ -179,7 +191,7 @@ void gameLoop::gameTick()
         {
             if(m_p->collidesWithItem(item))
             {
-                if (item == m_p) continue;
+                if (item->data(0).toString()!="solid") continue; // only solid blocks stop the player (skip goal + outlines)
                 //later on we should add other types by adding other conditions (coins,enemies,etc)
 
                QRectF blockRect=item->sceneBoundingRect();
@@ -205,7 +217,7 @@ void gameLoop::gameTick()
             QRectF groundSensor(PlayerRect.x(),PlayerRect.bottom(),PlayerRect.width(),1.0f); //sensor below the player's feet
             QList<QGraphicsItem*> itemsUnder = m_gv->scene->items(groundSensor); // store everything that this sensor touches into this list
             for(QGraphicsItem* item:itemsUnder)
-            if(item!= m_p) //ignore the player, add condition for other stuff
+            if(item->data(0).toString()=="solid") //only solid ground counts (skip goal + outlines)
             {
                 groundFound=true;
                 m_p->setVerticalSpeed(0);
@@ -218,6 +230,18 @@ void gameLoop::gameTick()
 
         // 3. Camera follows the player after its position is fully resolved this frame.
         m_gv->updateCamera();
+
+        // 4. Level-finish: if the player reaches the Endpoint goal, end the level.
+        if (!m_finished)
+        {
+            for (QGraphicsItem* item : m_gv->scene->collidingItems(m_p))
+            {
+                if (Endpoint* ep = dynamic_cast<Endpoint*>(item))
+                {
+                    if (ep->isReachedBy(m_p)) { finishLevel(); break; }
+                }
+            }
+        }
 
         /*if (item == m_p || item->data(0).toString() != "solid") continue; //if not continue
 

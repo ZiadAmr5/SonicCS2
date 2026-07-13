@@ -24,9 +24,12 @@ private:
     QTimer frameRate;
     Player* m_p;
     level* m_l;
+    bool m_finished = false; // set once the player reaches the level endpoint
 
 public:
     gameLoop(gameView* gv, Player* p, level* l);
+
+    void finishLevel(); // stop the loop and show the "level finished" message
 
 public slots:
     void gameTick(); // Core loop managing the two-step (X then Y) physics resolution

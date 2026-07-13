@@ -33,6 +33,7 @@ set(PROJECT_SOURCES
         src/Spring.cpp           include/Spring.h
         src/Hazard.cpp           include/Hazard.h
         src/MovingPlatform.cpp   include/MovingPlatform.h
+        src/Endpoint.cpp         include/Endpoint.h
         include/LevelMap.h
 )
 
