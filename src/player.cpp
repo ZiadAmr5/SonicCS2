@@ -1,9 +1,11 @@
 
 #include <player.h>
+#include "Enemy.h"
+#include "Coin.h"
 #include <QDebug>
 using namespace std;
 //quick player rectangle for testing ( I think it is obvious where this came from, except velocityX and y)
-Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent) ,groundSpeed(0)
+Player::Player(QGraphicsItem *parent) : Entity(parent) ,groundSpeed(0)
 {
     // Define a 40 width x 60 height rectangle placeholder
     setRect(0, 0, 40, 60);
@@ -111,7 +113,7 @@ Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent) ,groundSpeed(0
      {
         // qDebug()<<"jump is true";
          //we subtract to preserve the speed before the jump, the functions are switched because we want to jump perpendicular to the surface we are on
-        float baseJump =200.0f;
+        float baseJump =240.0f;
         float momentumBonus= abs(velocityX)*0.4f;
         //groundSpeed=velocityX;
         velocityY=-(baseJump+momentumBonus);
@@ -119,15 +121,21 @@ Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent) ,groundSpeed(0
         isJumping=true;
 
 
+
      }
-     else if(isJumping &&!jumpHeld&& velocityY<0)
+     else if(isJumping &&!jumpHeld&& velocityY<0)g
      {
          velocityY*=0.5;
          isJumping=false;
      }
      if (!isOnGround)
      {
+         if(jumpHeld&&velocityY <0)
+              velocityY+=jumpingGravity*deltatime;
+         else
+         {
          velocityY+=gravity*deltatime;
+         }
          if(velocityY>maxTerminalVelocity)
          {
              velocityY=maxTerminalVelocity;
@@ -143,69 +151,15 @@ Player::Player(QGraphicsItem *parent) : QGraphicsRectItem(parent) ,groundSpeed(0
      //qDebug() << "Player pos:" << this->pos() << "leftFoot:" << leftFoot << "rightFoot:" << rightFoot;
 
 }
-/*SensorGrid Player::getSensorGrid():
-{
-    SensorGrid grid;
-    double w = 40.0;
-    double h = 60.0;
-    double px = this->pos().x();
-    double py = this->pos().y();
 
-    double inset = 4.0;
-    double wallInset = 10.0;
-    grid.floorLength = 14.0 + (this->isOnGround ? 16.0 : 0.0);
 
-    // Determine base directions based on orientation mode
-    collisionMode mode = getcollisionMode(this->getGroundAngleDegrees());
-    if (mode == collisionMode::floor) {
-        grid.downDir = QPointF(0, 1);    grid.leftDir = QPointF(-1, 0);
-    } else if (mode == collisionMode::rightWall) {
-        grid.downDir = QPointF(1, 0);    grid.leftDir = QPointF(0, 1);
-    } else if (mode == collisionMode::ceiling) {
-        grid.downDir = QPointF(0, -1);   grid.leftDir = QPointF(1, 0);
-    } else if (mode == collisionMode::leftWall) {
-        grid.downDir = QPointF(-1, 0);   grid.leftDir = QPointF(0, -1);
-    }
+// --- UML gameplay behaviour (Mario) — stubs; to be wired into the game loop ---
+void Player::stompEnemy(Enemy* e)          { Q_UNUSED(e); /* TODO: bounce off enemy, e->stomped() */ }
+void Player::collectCoin(Coin* c)          { Q_UNUSED(c); coins++; addScore(100); /* TODO: sfx/HUD */ }
+void Player::powerUp(PowerState newState)  { power = newState; /* TODO: grow/fire visuals */ }
+void Player::addScore(int points)          { score += points; }
 
-    grid.upDir    = -grid.downDir;
-    grid.rightDir = QPointF(-grid.downDir.y(), grid.downDir.x());
-    grid.leftDir  = -grid.rightDir;
 
-    // Standard baseline center offset calculation
-    QPointF center(px + w/2.0, py + h/2.0);
-
-    // Ground Points
-    QPointF gBase = center + (grid.downDir * (h/2.0));
-    grid.originA = gBase - (grid.rightDir * 16.0);
-    grid.originB = gBase + (grid.rightDir * 16.0);
-
-    // Ceiling Points
-    QPointF cBase = center + (grid.upDir * (h/2.0));
-    grid.originE = cBase - (grid.rightDir * 16.0);
-    grid.originF = cBase + (grid.rightDir * 16.0);
-
-    // Wall Points
-    grid.originC = center + (grid.leftDir * (w/2.0))  + (grid.downDir * ((h/2.0) - wallInset));
-    grid.originD = center + (grid.rightDir * (w/2.0)) + (grid.downDir * ((h/2.0) - wallInset));
-
-    return grid;
-}
-double Player::getGroundAngleDegrees()
-{
-    // 1. Convert raw radians into standard degrees
-    double degrees = this->groundAngle * 180.0 / M_PI;
-
-    // 2. Normalize negative angles (e.g., -90 degrees becomes 270 degrees)
-    while (degrees < 0.0) {
-        degrees += 360.0;
-    }
-    while (degrees >= 360.0) {
-        degrees -= 360.0;
-    }
-
-    return degrees;
-}
-*/
 
 
 

@@ -1,17 +1,27 @@
 #include "GameEngine.h"
+#include "LevelMap.h"
 
 gameView::gameView(Player* p, level* l, QWidget* parent)
     : scene(nullptr), mp(p), QGraphicsView(parent),
     leftKeyPressed(false), rightKeyPressed(false), DownKeyPressed(false), UpKeyPressed(false)
 {
     scene = new QGraphicsScene(this);
-    scene->setSceneRect(0, 0, 800, 600);
     setFocusPolicy(Qt::StrongFocus);
+
+    // --- Camera setup ---
+    // Hide the scrollbars; the camera drives the view via updateCamera() instead of the user scrolling.
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
     ml = l;
 
-    // --- 🌟 MARIO UI CHANGE ---
-    // Remove the Tiled parsing entirely. Load collisionBoundaries straight from this visual UI scene.
     scene->addItem(mp); // Add player first so the scene tracks them
+
+    // Build the editable level (edit include/LevelMap.h). This places the ground/platform
+    // blocks, positions the player, and sizes the world for the camera to scroll within.
+    buildLevel(scene, mp);
+
+    // Load collisionBoundaries straight from the blocks we just placed in the scene.
     ml->loadFromUiScene(scene);
 
     // Render visual boundaries only if you want to see them for debugging!
@@ -20,6 +30,8 @@ gameView::gameView(Player* p, level* l, QWidget* parent)
     scaleFactor = scene->width() / 320.0;
     mp->getScaleFactor(scaleFactor);
     setScene(scene);
+
+    updateCamera(); // frame the player on the very first frame
 }
 
 void gameView::keyPressEvent(QKeyEvent* event)
@@ -70,7 +82,7 @@ void gameView::updatePosition()
 }
 */
 
-void gameView::renderLevel(const level& lev)
+void gameView::renderLevel(level& lev)
 {
     // If you aren't rendering static background images anymore, this just outlines your hitboxes
     for(const collisionBoundary& b : lev.getcollisionBoundaries())
@@ -80,6 +92,21 @@ void gameView::renderLevel(const level& lev)
         item->setPen(QPen(Qt::red, 2)); // Draw red outlines around your blocks for debugging
         scene->addItem(item);
     }
+}
+
+void gameView::updateCamera()
+{
+    if (!mp) return;
+
+    // Follow the player horizontally; look a little ahead in the direction of travel so the
+    // player sees what's coming. Vertical stays locked to the world's mid-line (single-screen-tall level).
+    qreal playerX  = mp->sceneBoundingRect().center().x();
+    qreal lookahead = qBound(-140.0, mp->getHorizontalSpeed() * 0.35, 140.0);
+    qreal camX = playerX + lookahead;
+    qreal camY = sceneRect().center().y();
+
+    // centerOn() clamps to sceneRect(), so the camera never scrolls past the world edges.
+    centerOn(camX, camY);
 }
 
 gameLoop::gameLoop(gameView* gv, Player* p, level* l) : m_gv(gv), m_p(p), m_l(l)
@@ -132,6 +159,11 @@ void gameLoop::gameTick()
         }
     }
         m_p->setPos(m_p->pos().x(),m_p->pos().y()+(vy*deltatime));
+
+        // Assume airborne each frame; only a landing (below) re-confirms grounded.
+        // Without this, walking off a ledge leaves isOnGround stuck true and gravity never re-applies.
+        m_p->setIsOnGround(false);
+
         for(QGraphicsItem* item:m_gv->scene->collidingItems(m_p))
         {
             if(m_p->collidesWithItem(item))
@@ -154,6 +186,9 @@ void gameLoop::gameTick()
                 }
             }
         }
+
+        // 3. Camera follows the player after its position is fully resolved this frame.
+        m_gv->updateCamera();
 
         /*if (item == m_p || item->data(0).toString() != "solid") continue; //if not continue
 

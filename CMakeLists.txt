@@ -21,6 +21,19 @@ set(PROJECT_SOURCES
         include/player.h
         include/mainwindow.h
         include/GameEngine.h
+
+        # UML scaffold classes (Mario)
+        src/GameObject.cpp       include/GameObject.h
+        src/Entity.cpp           include/Entity.h
+        src/Physics.cpp          include/Physics.h
+        src/Enemy.cpp            include/Enemy.h
+        src/Coin.cpp             include/Coin.h
+        src/Block.cpp            include/Block.h
+        src/PowerUp.cpp          include/PowerUp.h
+        src/Spring.cpp           include/Spring.h
+        src/Hazard.cpp           include/Hazard.h
+        src/MovingPlatform.cpp   include/MovingPlatform.h
+        include/LevelMap.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
