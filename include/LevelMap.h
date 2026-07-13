@@ -15,36 +15,36 @@
 //  Each line below is one row of the level, from top to bottom.
 //    'X' = solid block (ground / platform / wall)
 //    'P' = player start position (only the first 'P' is used)
-//    'E' = end goal — touching it finishes the level (stack several for a tall flag)
+//    'E' = end goal - touching it finishes the level (stack several for a tall flag)
 //    ' ' = empty space (sky)
 //
 //  - One character = one TILE (default 40 px). The player is 40x60 (~1.5 tiles).
 //  - Rows may be different lengths; the world width is the longest row.
 //  - Add/remove rows freely; the world height grows to match.
-//  - To close the pit, just fill the two spaces in the bottom rows with 'X'.
+//  - Run (Z) to build speed before jumping the 2-wide pits.
 //  Recompile (Build & Run in Qt Creator) to see your changes.
 // =============================================================================
 static const QStringList LEVEL_MAP = {
-    "                                                  ", //  0  sky
-    "                                                  ", //  1
-    "                                                  ", //  2
-    "                              XXXXXXX             ", //  3  high platform
-    "                                                  ", //  4
-    "            XXXXX                       XXXX      ", //  5  platforms
-    "                 XXXX                             ", //  6
-    "                     XXXXX                        ", //  7  mid platform
-    "                                                  ", //  8
-    "   P                                           E  ", //  9  <- player start / goal flag
-    "XXXXXXXXX                    XXXXXXXX          E  ", // 10  start hill + block
-    "XXXXXXXXXXXXXXXXX                    XXXXXXXX  E  ", // 11  goal 'E' standing on the ground
-    "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX", // 12  ground (gap = pit)
-    "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX", // 13  ground
-    "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX", // 14  ground
+    "                                                                                                    ", // 0  sky
+    "                                                                                                    ", // 1
+    "                                                                                                    ", // 2
+    "                              XXXXXXX                                         XXXXXXX               ", // 3  high platforms
+    "                                                                                                    ", // 4
+    "            XXXXX                       XXXX              XXXXX                         XXXXX       ", // 5  platforms
+    "                 XXXX                                             XXXX                              ", // 6
+    "                     XXXXX                                              XXXXX                       ", // 7  mid platforms
+    "                                                                                                    ", // 8
+    "   P                                                                                           E    ", // 9  player start / goal flag
+    "XXXXXXXXX                    XXXXXXXX                         XXXXXXXX                         E    ", // 10 hills + blocks
+    "XXXXXXXXXXXXXXXXX                    XXXXXXXX                                 XXXXXXXX         E    ", // 11 goal on the ground
+    "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXX", // 12 ground (two pits at cols 24-25 and 72-73)
+    "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXX", // 13 ground
+    "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXX", // 14 ground
 };
 
-// Builds LEVEL_MAP into the scene: one solid block per 'X', places the player
-// at 'P', and sizes the world to fit the map. Call this before the level's
-// loadFromUiScene() so it picks the blocks up as collision boundaries.
+// Builds LEVEL_MAP into the scene: one solid block per 'X', a goal per 'E',
+// places the player at 'P', and sizes the world to fit the map. Call this before
+// the level's loadFromUiScene() so it picks the blocks up as collision boundaries.
 inline void buildLevel(QGraphicsScene* scene, Player* player, double tile = 40.0)
 {
     const QColor groundFill(150, 90, 45);
