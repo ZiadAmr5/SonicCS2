@@ -5,57 +5,25 @@
 #include <QGraphicsRectItem>
 #include <QBrush>
 #include <QPen>
-#include <QStringList>
 #include "player.h"
 #include "Endpoint.h"
 #include "Coin.h"
 #include "goomba.h"
+#include "LevelData.h"
 
-// =============================================================================
-//  ====>  EDIT YOUR LEVEL HERE  <====
-//
-//  Each line below is one row of the level, from top to bottom.
-//    'X' = solid block (ground / platform / wall)
-//    'P' = player start position (only the first 'P' is used)
-//    'E' = end goal - touching it finishes the level (stack several for a tall flag)
-//    'C' = coin  (collect for health / score; 100 coins = +1 life)
-//    'N' = eNemy (Goomba - stomp from above to kill, side contact hurts you)
-//    ' ' = empty space (sky)
-//
-//  - One character = one TILE (default 40 px). The player is 40x60 (~1.5 tiles).
-//  - Rows may be different lengths; the world width is the longest row.
-//  - Keep the bottom ground rows full width - they define how far the world extends.
-//  Recompile (Build & Run in Qt Creator) to see your changes.
-// =============================================================================
-static const QStringList LEVEL_MAP = {
-    "                                                                                                    ", // 0  sky
-    "                                                                                                    ", // 1
-    "                                                                                                    ", // 2
-    "                              XXXXXXX                                         XXXXXXX               ", // 3  high platforms
-    "                                                                                                    ", // 4
-    "            XXXXX                       XXXX              XXXXX                         XXXXX       ", // 5  platforms
-    "                 XXXX                                             XXXX                              ", // 6
-    "                     XXXXX                                              XXXXX                       ", // 7  mid platforms
-    "                                                                                                    ", // 8
-    "   P                                                                                           E    ", // 9  player start / goal flag
-    "XXXXXXXXX                    XXXXXXXX         CCCCCCC         XXXXXXXX                         E    ", // 10 hills + blocks + coins
-    "XXXXXXXXXXXXXXXXX   N   CCCCC        XXXXXXXX CCCCCCC     N                   XXXXXXXX         E    ", // 11 goal + coins (C) + enemies (N)
-    "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXX", // 12 ground (two pits at cols 24-25 and 72-73)
-    "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXX", // 13 ground
-    "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXX", // 14 ground
-};
-
-// Builds LEVEL_MAP into the scene: solid block per 'X', coin per 'C', Goomba per 'N',
-// goal per 'E', player at 'P'; sizes the world to fit the map. Call before the level's
-// loadFromUiScene() so it picks up the solid blocks as collision boundaries.
-inline void buildLevel(QGraphicsScene* scene, Player* player, double tile = 40.0)
+// Spawns a LevelData's tile map into the scene: solid block per 'X', coin per 'C',
+// Goomba per 'N', goal per 'E', player at 'P'; sizes the world to fit the map.
+// Call this before the level's loadFromUiScene() so it picks up the solid blocks
+// as collision boundaries. Edit the maps themselves in Levels.h.
+inline void buildLevel(QGraphicsScene* scene, Player* player, const LevelData& lvl, double tile = 40.0)
 {
     const QColor groundFill(150, 90, 45);
     const QColor groundEdge(90, 54, 27);
 
-    const int rows = LEVEL_MAP.size();
+    const QStringList& map = lvl.map;
+    const int rows = map.size();
     int cols = 0;
-    for (const QString& row : LEVEL_MAP)
+    for (const QString& row : map)
         cols = qMax(cols, row.length());
 
     scene->setSceneRect(0, 0, cols * tile, rows * tile);
@@ -65,7 +33,7 @@ inline void buildLevel(QGraphicsScene* scene, Player* player, double tile = 40.0
 
     for (int r = 0; r < rows; ++r)
     {
-        const QString& row = LEVEL_MAP.at(r);
+        const QString& row = map.at(r);
         for (int c = 0; c < row.length(); ++c)
         {
             const QChar ch = row.at(c);

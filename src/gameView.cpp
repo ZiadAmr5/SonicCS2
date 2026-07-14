@@ -1,5 +1,6 @@
 #include "GameEngine.h"
 #include "LevelMap.h"
+#include "Levels.h"
 #include "Endpoint.h"
 #include "Coin.h"
 #include "goomba.h"
@@ -20,21 +21,8 @@ gameView::gameView(Player* p, level* l, QWidget* parent)
 
     ml = l;
 
-    scene->addItem(mp); // Add player first so the scene tracks them
-
-    // Build the editable level (edit include/LevelMap.h). This places the ground/platform
-    // blocks, positions the player, and sizes the world for the camera to scroll within.
-    buildLevel(scene, mp);
-
-    // Load collisionBoundaries straight from the blocks we just placed in the scene.
-    ml->loadFromUiScene(scene);
-
-    // Render visual boundaries only if you want to see them for debugging!
-    renderLevel(*ml);
-
-    scaleFactor = scene->width() / 320.0;
-    mp->getScaleFactor(scaleFactor);
     setScene(scene);
+    scene->addItem(mp); // add the player once; loadLevel() keeps it across level swaps
 
     // --- HUD overlay (floats over the view, doesn't scroll with the camera) ---
     hud = new QLabel(this);
@@ -42,9 +30,43 @@ gameView::gameView(Player* p, level* l, QWidget* parent)
                        "padding: 4px 8px; font: bold 15px 'Consolas';");
     hud->move(10, 10);
     hud->raise();
-    updateHud();
 
-    updateCamera(); // frame the player on the very first frame
+    // Load all levels (edit them in Levels.h) and build the first one.
+    levels = allLevels();
+    loadLevel(0);
+}
+
+// Clears the current level from the scene and builds the given level in its place.
+void gameView::loadLevel(int index)
+{
+    if (index < 0 || index >= levels.size()) return;
+    currentLevel = index;
+
+    // Rebuild the scene without destroying the player object.
+    if (mp->scene() == scene) scene->removeItem(mp);
+    scene->clear();          // deletes the old level's blocks/coins/enemies/outlines
+    scene->addItem(mp);
+
+    // Reset the player's motion; its position is set by 'P' inside buildLevel().
+    mp->setHorizontalSpeed(0);
+    mp->setVerticalSpeed(0);
+    mp->setGroundSpeed(0);
+    mp->setIsOnGround(false);
+
+    buildLevel(scene, mp, levels[index]);
+    ml->loadFromUiScene(scene);   // collision boundaries from the solid blocks
+    renderLevel(*ml);             // (debug) outline the boundaries
+
+    scaleFactor = scene->width() / 320.0;
+    mp->getScaleFactor(scaleFactor);
+
+    updateCamera(); // frame the player on the first frame of the level
+    updateHud();
+}
+
+void gameView::loadNextLevel()
+{
+    if (hasNextLevel()) loadLevel(currentLevel + 1);
 }
 
 void gameView::keyPressEvent(QKeyEvent* event)
@@ -152,11 +174,19 @@ gameLoop::gameLoop(gameView* gv, Player* p, level* l) : m_gv(gv), m_p(p), m_l(l)
 
 void gameLoop::finishLevel()
 {
+    // More levels to play? Advance and keep going.
+    if (m_gv->hasNextLevel())
+    {
+        m_gv->loadNextLevel();
+        return;
+    }
+
+    // Last level finished -> win.
     m_finished = true;
     frameRate.stop(); // freeze the game
     QMessageBox::information(m_gv,
-                             QStringLiteral("Level Complete"),
-                             QStringLiteral("\xF0\x9F\x8F\x81  Level Finished!"));
+                             QStringLiteral("You Win!"),
+                             QStringLiteral("\xF0\x9F\x8F\x81  All levels complete!"));
 }
 
 void gameLoop::gameOver()
@@ -166,6 +196,34 @@ void gameLoop::gameOver()
     QMessageBox::information(m_gv,
                              QStringLiteral("Game Over"),
                              QStringLiteral("\xF0\x9F\x92\x80  Game Over"));
+}
+
+// Player died: spend a life and restart the level, or game over when out of lives.
+void gameLoop::die()
+{
+    m_p->loseLife();
+    if (m_p->getLives() > 0)
+    {
+        m_p->resetHealth();
+        m_gv->loadLevel(m_gv->currentLevel); // retry the current level
+    }
+    else
+    {
+        gameOver();
+    }
+}
+
+// Jump straight to a level (Levels menu). Resets health and resumes the loop if stopped.
+void gameLoop::goToLevel(int index)
+{
+    m_finished = false;
+    m_p->resetHealth();
+    m_gv->loadLevel(index);
+    if (!frameRate.isActive())
+    {
+        TimeBetFrames.restart();
+        frameRate.start(16);
+    }
 }
 
 
@@ -263,6 +321,13 @@ void gameLoop::gameTick()
         }
             m_p->setIsOnGround(groundFound);
 
+        // --- Pit death: falling below the world costs a life (retry or game over) ---
+        if (m_p->sceneBoundingRect().top() > m_gv->scene->sceneRect().bottom() + 80)
+        {
+            die();
+            return;
+        }
+
         // --- Enemies: a stomp from above kills the Goomba (+score); side contact hurts the player ---
         for (QGraphicsItem* item : m_gv->scene->collidingItems(m_p))
         {
@@ -281,7 +346,7 @@ void gameLoop::gameTick()
             else
             {
                 m_p->takeDamage(1);          // side contact: lose one health point
-                if (m_p->isDead()) { gameOver(); return; }
+                if (m_p->isDead()) { die(); return; }
             }
             break; // resolve one enemy interaction per frame
         }
@@ -307,7 +372,7 @@ void gameLoop::gameTick()
             {
                 if (Endpoint* ep = dynamic_cast<Endpoint*>(item))
                 {
-                    if (ep->isReachedBy(m_p)&&m_p->getMaxHealth()==0) { finishLevel(); break; }
+                    if (ep->isReachedBy(m_p)) { finishLevel(); break; }
                 }
             }
         }

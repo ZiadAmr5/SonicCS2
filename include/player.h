@@ -79,6 +79,9 @@ public:
     void tickInvincibility();                   // count down i-frames (call once per frame)
     bool isDead() const { return health <= 0; }
 
+    void loseLife()    { if (lives > 0) lives--; }                 // on death, spend a life
+    void resetHealth() { health = maxHealth; isInvincible = false; invincibleFrames = 0; }
+
     int  getLives()     const { return lives; }
     int  getCoins()     const { return coins; }
     int  getScore()     const { return score; }

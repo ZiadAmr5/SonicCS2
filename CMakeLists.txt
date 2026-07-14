@@ -36,6 +36,8 @@ set(PROJECT_SOURCES
         src/Endpoint.cpp         include/Endpoint.h
         src/goomba.cpp           include/goomba.h
         include/LevelMap.h
+        include/LevelData.h
+        include/Levels.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

@@ -10,7 +10,9 @@
 #include <player.h>
 #include <QObject>
 #include <QDebug>
+#include <QVector>
 #include <level.h>
+#include "LevelData.h"
 
 class gameView;
 class QLabel;
@@ -30,8 +32,10 @@ private:
 public:
     gameLoop(gameView* gv, Player* p, level* l);
 
-    void finishLevel(); // stop the loop and show the "level finished" message
+    void finishLevel(); // advance to the next level (or win)
     void gameOver();    // stop the loop and show the "game over" message
+    void die();         // player died: lose a life -> restart level, or game over at 0 lives
+    void goToLevel(int index); // jump to a level (used by the Levels menu); resumes the loop
 
 public slots:
     void gameTick(); // Core loop managing the two-step (X then Y) physics resolution
@@ -67,6 +71,13 @@ public:
 
     QLabel* hud = nullptr;  // on-screen score / coins / lives / health display
     void updateHud();       // refresh the HUD text from the player
+
+    // --- Level management ---
+    QVector<LevelData> levels;      // all levels, in order (from allLevels())
+    int                currentLevel = 0;
+    void loadLevel(int index);      // clear the scene and build the given level
+    void loadNextLevel();           // advance to the next level
+    bool hasNextLevel() const { return currentLevel + 1 < levels.size(); }
 
     void setDeltaTime(double dt) { deltatime = dt; }
 
