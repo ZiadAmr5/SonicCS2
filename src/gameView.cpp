@@ -297,17 +297,17 @@ void gameLoop::gameTick()
             }
         }
 
-        // 3. Camera follows the player after its position is fully resolved this frame.
+        //  Camera follows the player after its position is fully resolved this frame.
         m_gv->updateCamera();
 
-        // 4. Level-finish: if the player reaches the Endpoint goal, end the level.
+        // Level-finish: if the player reaches the Endpoint goal, end the level.
         if (!m_finished)
         {
             for (QGraphicsItem* item : m_gv->scene->collidingItems(m_p))
             {
                 if (Endpoint* ep = dynamic_cast<Endpoint*>(item))
                 {
-                    if (ep->isReachedBy(m_p)) { finishLevel(); break; }
+                    if (ep->isReachedBy(m_p)&&m_p->getMaxHealth()==0) { finishLevel(); break; }
                 }
             }
         }

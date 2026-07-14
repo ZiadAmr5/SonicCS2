@@ -1,4 +1,4 @@
-#include "Goomba.h"
+#include "goomba.h"
 
 Goomba::Goomba(QGraphicsItem *parent)
     : QGraphicsRectItem(parent)

@@ -40,7 +40,7 @@ private:
     float deltatime;
     float scaleFactor; // Unused for now
 
-    // --- UML gameplay state (Mario) ---
+
     int        lives = 3;
     int        coins = 0;
     int        score = 0;
@@ -82,6 +82,7 @@ public:
     int  getLives()     const { return lives; }
     int  getCoins()     const { return coins; }
     int  getScore()     const { return score; }
+    void setMaxHealth(int value) {maxHealth=value;}
     int  getMaxHealth() const { return maxHealth; }
     bool getInvincible() const { return isInvincible; }
 };

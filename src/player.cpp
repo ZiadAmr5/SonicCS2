@@ -190,10 +190,16 @@ void Player::takeDamage(int amount)
 {
     if (isInvincible) return;
     health -= amount;
-    if (health < 0) health = 0;
+    if (health < 0)
+    {
+        health = 0;
+        setMaxHealth(health);
+    }
     isInvincible     = true;
     invincibleFrames = 90; // ~1.5s at 60 FPS
+
     qDebug() << "hit! health now:" << health;
+
 }
 
 void Player::tickInvincibility()
