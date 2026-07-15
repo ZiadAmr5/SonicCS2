@@ -14,6 +14,9 @@ public:
 
     explicit PowerUp(PowerType t = PowerType::Mushroom, QGraphicsItem* parent = nullptr);
 
+    // Draws the Super Mushroom / Fire Flower sprite instead of a plain rectangle.
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+
     PowerType getType() const { return type; }
     void      apply(Player* p);   // give the player this power-up's effect
 

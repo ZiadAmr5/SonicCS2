@@ -37,6 +37,7 @@ set(PROJECT_SOURCES
         src/goomba.cpp           include/goomba.h
         src/Fireball.cpp         include/Fireball.h
         include/LevelMap.h
+        include/Sprites.h
         include/LevelData.h
         include/Levels.h
 )

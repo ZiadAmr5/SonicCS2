@@ -14,6 +14,9 @@ class Coin : public GameObject
 public:
     explicit Coin(QGraphicsItem* parent = nullptr);
 
+    // Draws the spinning NES coin instead of a plain rectangle.
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+
     bool isCollected() const { return collected; }
     void collect(Player* p);
 };

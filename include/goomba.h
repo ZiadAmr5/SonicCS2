@@ -13,11 +13,15 @@ public:
 
     void update();
 
+    // Draws the NES Goomba sprite (2-frame waddle) instead of a plain rectangle.
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
+
 private:
     bool movingRight;
     double speed;
     int timer;
     int patrolFrames;
+    int animTimer = 0;   // drives the 2-frame waddle
 };
 
 

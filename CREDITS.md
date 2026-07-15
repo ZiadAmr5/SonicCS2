@@ -1,6 +1,15 @@
 # Credits
 
-## Sprites
+## Sprites — enemies, items and blocks
+
+Goomba, coin, Super Mushroom, Fire Flower and brick/`?` block sprites
+(`assets/Custom _ Edited - Mario Customs - Mario - Mario (Super Mario Bros. 3 NES-Style).png`,
+sliced into `assets/nes_atlas.png`) come from the **"Mario (Super Mario Bros. 3 NES-Style)"**
+custom sheet on The Spriters Resource. Credit as listed on the sheet:
+
+> SONICPROJECT · NES BOY · BACON · SATURNECHIDNA · DRSHNAPS · MARIO&LUIGI · MOAP · MOSES KIM · TONY
+
+## Sprites — Mario
 
 Mario sprites (`assets/Mario_Sheet.png`, sliced into `assets/mario_frames.png`) come from the
 **"Mario / SMM2 Luigi" (SMB3 style)** custom sheet on The Spriters Resource:

@@ -11,6 +11,7 @@
 #include "goomba.h"
 #include "PowerUp.h"
 #include "LevelData.h"
+#include "Sprites.h"
 
 // Spawns a LevelData's tile map into the scene: solid block per 'X', coin per 'C',
 // Goomba per 'N', goal per 'E', player at 'P'; sizes the world to fit the map.
@@ -20,6 +21,8 @@ inline void buildLevel(QGraphicsScene* scene, Player* player, const LevelData& l
 {
     const QColor groundFill(150, 90, 45);
     const QColor groundEdge(90, 54, 27);
+    // Brick texture for solid blocks; a texture brush tiles it exactly once per 'tile'-sized block.
+    const QPixmap brickTex = Sprites::tile(Sprites::ITEM_BRICK, Sprites::ROW_ITEM, int(tile));
 
     const QStringList& map = lvl.map;
     const int rows = map.size();
@@ -42,8 +45,13 @@ inline void buildLevel(QGraphicsScene* scene, Player* player, const LevelData& l
             {
                 auto* block = new QGraphicsRectItem(0, 0, tile, tile);
                 block->setPos(c * tile, r * tile);
-                block->setBrush(QBrush(groundFill));
-                block->setPen(QPen(groundEdge, 1));
+                if (!brickTex.isNull()) {          // brick sprite
+                    block->setBrush(QBrush(brickTex));
+                    block->setPen(Qt::NoPen);
+                } else {                            // fallback: flat brown
+                    block->setBrush(QBrush(groundFill));
+                    block->setPen(QPen(groundEdge, 1));
+                }
                 block->setData(0, QStringLiteral("solid"));
                 scene->addItem(block);
             }
