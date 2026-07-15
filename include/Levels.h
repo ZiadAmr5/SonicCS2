@@ -6,11 +6,17 @@
 
 // =============================================================================
 //  ====>  ALL LEVELS LIVE HERE  <====
-//  Each LevelData below is one level. To add another level, instantiate a new
+//  Each LevelData below is one level. To add another, instantiate a new
 //  LevelData, fill in its map, and add it to the returned list.
 //
 //  Symbols:  X solid | P start | E goal | C coin | N enemy (Goomba)
-//            M Super Mushroom (grow) | F Fire Flower (shoot with X) | (space) empty
+//            M Super Mushroom | F Fire Flower | (space) empty
+//
+//  DESIGN NOTE - what the player can actually reach with the current physics:
+//    standing jump ~1.1 tiles | walking ~1.6 | running ~2.9 (max)
+//  So never place a step/platform more than 2 tiles above the surface the
+//  player jumps from, or it becomes impossible. Use staircases to go higher.
+//  Ground occupies the bottom 3 rows; the player stands on row 11.
 // =============================================================================
 inline QVector<LevelData> allLevels()
 {
@@ -18,54 +24,54 @@ inline QVector<LevelData> allLevels()
         "                                                                                                    ",
         "                                                                                                    ",
         "                                                                                                    ",
-        "                              XXXXXXX                                         XXXXXXX               ",
         "                                                                                                    ",
-        "            XXXXX                       XXXX              XXXXX                         XXXXX       ",
-        "                 XXXX                                             XXXX                              ",
-        "                     XXXXX                                              XXXXX                       ",
         "                                                                                                    ",
-        "   P                                                                                           E    ",
-        "XXXXXXXXX                    XXXXXXXX         CCCCCCC         XXXXXXXX                         E    ",
-        "XXXXXXXXXXXXXXXXX M N   CCCCC        XXXXXXXX CCCCCCC  F  N                   XXXXXXXX         E    ",
-        "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXX"
+        "                                                                                                    ",
+        "                                                                                                    ",
+        "                                                                                                    ",
+        "                                                                                                    ",
+        "                                      CCCCCC                                                   E    ",
+        "   P   CCCCCC            XX           XXXXXX                              CCCCCC         XX    E    ",
+        "              M    N    XXXX                   N    F  XXXXX          N            N    XXX    E    ",
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     };
 
     LevelData l2; l2.name = "Level 2"; l2.map = QStringList{
-        "                                                                                          ",
-        "                                                                                          ",
-        "                                                                                          ",
-        "                                                                      XXXXXXX             ",
-        "                                                                                          ",
-        "          XXXXXX                                  XXXXXX                                  ",
-        "                         CCCCCC                                                           ",
-        "                        XXXXXXX                                 XXXXXXX                   ",
-        "                                        CCCCCCC                                           ",
-        "   P                                    XXXXXXX                                        E  ",
-        "                                                                                       E  ",
-        "          M       XXXXX          CCNCCCC     F              N XXXXX        N           E  ",
-        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        "                                                                                                        ",
+        "                                                                                                        ",
+        "                                                                                                        ",
+        "                                                                                                        ",
+        "                                                                                                        ",
+        "                                                                                                        ",
+        "                                                                                                        ",
+        "                                                                                                        ",
+        "                                                                                                        ",
+        "                  XX              CCCCCC                    CCCCCC                                  E   ",
+        "  P     CCCCCC   XXXX             XXXXXX    CCCCC           XXXXXX                           XX     E   ",
+        "      M    N    XXXXXX              N       XXXXX         F    N      XXXXX           N     XXXX  N E   ",
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXX",
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXX",
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXX"
     };
 
     LevelData l3; l3.name = "Level 3"; l3.map = QStringList{
-        "                                                                                                              ",
-        "                                                                                                              ",
-        "                                                                                                              ",
-        "                                                                                                              ",
-        "                              XXXXXXX                                                   XXXXXXX               ",
-        "                                                                                                              ",
-        "            XXXXXX                                     XXXXXX                                   CCCCCC        ",
-        "                                                                                                              ",
-        "                                        CCCCCC                        XXXXXX                                  ",
-        "   P                                                                                                     E    ",
-        "                         CCCCCC                                                      XXXXXX              E    ",
-        "        M      N              F         N         XXXXXXXXX CCCCCNCCCC                              N    E    ",
-        "XXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "XXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        "XXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        "                                                                                                                ",
+        "                                                                                                                ",
+        "                                                                                                                ",
+        "                                                                                                                ",
+        "                                                                                                                ",
+        "                                                                                                                ",
+        "                                                                                                                ",
+        "                                                                                                                ",
+        "                                                                                                                ",
+        "              CCCCC                                                             CCCCC                 XX    E   ",
+        " P   CCCCCC   XXXXX            XXX                  CCCCC XXXXX                 XXXXX                XXX    E   ",
+        "   M    N                     XXXXX   N          FN XXXXX       N       N XXXXX               N     XXXX    E   ",
+        "XXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXX",
+        "XXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXX",
+        "XXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXX"
     };
 
     return { l1, l2, l3 };

@@ -9,6 +9,11 @@
 #include <QMessageBox>
 #include <QLabel>
 #include <QSet>
+#include <QPainter>
+#include <cmath>
+#include "Sfx.h"
+#include <QMediaPlayer>
+#include <QAudioOutput>
 
 gameView::gameView(Player* p, level* l, QWidget* parent)
     : scene(nullptr), mp(p), QGraphicsView(parent),
@@ -34,6 +39,18 @@ gameView::gameView(Player* p, level* l, QWidget* parent)
     hud->move(10, 10);
     hud->raise();
 
+    // --- Audio: preload the effects and start the looping overworld theme ---
+    Sfx::preload();
+    {
+        auto* music = new QMediaPlayer(this);
+        auto* out   = new QAudioOutput(this);
+        music->setAudioOutput(out);
+        music->setSource(QUrl(QStringLiteral("qrc:/assets/assets/smb3_overworld.wav")));
+        music->setLoops(QMediaPlayer::Infinite);
+        out->setVolume(0.35); // sit under the sound effects
+        music->play();
+    }
+
     // Load all levels (edit them in Levels.h) and build the first one.
     levels = allLevels();
     loadLevel(0);
@@ -58,7 +75,7 @@ void gameView::loadLevel(int index)
 
     buildLevel(scene, mp, levels[index]);
     ml->loadFromUiScene(scene);   // collision boundaries from the solid blocks
-    renderLevel(*ml);             // (debug) outline the boundaries
+    // renderLevel(*ml);          // (debug) red hitbox outlines - re-enable to see collision boxes
 
     scaleFactor = scene->width() / 320.0;
     mp->getScaleFactor(scaleFactor);
@@ -145,6 +162,22 @@ void gameView::renderLevel(level& lev)
     }
 }
 
+// NES-style backdrop: fill the sky, then tile the scenery strip horizontally across the world.
+// The strip is 600px tall with its bushes sitting on y=480 - the same ground line as our levels.
+void gameView::drawBackground(QPainter* painter, const QRectF& rect)
+{
+    static const QPixmap backdrop(QStringLiteral(":/assets/assets/backdrop.png"));
+    const QColor sky(156, 252, 240); // SMB3 overworld sky
+
+    painter->fillRect(rect, sky);
+    if (backdrop.isNull()) return; // no asset -> plain sky
+
+    const int w = backdrop.width();
+    const int x0 = int(std::floor(rect.left() / w)) * w; // snap to the tile grid
+    for (int x = x0; x < int(rect.right()) + w; x += w)
+        painter->drawPixmap(x, 0, backdrop);
+}
+
 void gameView::updateCamera()
 {
     if (!mp) return;
@@ -187,6 +220,8 @@ gameLoop::gameLoop(gameView* gv, Player* p, level* l) : m_gv(gv), m_p(p), m_l(l)
 
 void gameLoop::finishLevel()
 {
+    Sfx::play(Sfx::LevelClear);
+
     // More levels to play? Advance and keep going.
     if (m_gv->hasNextLevel())
     {
@@ -214,6 +249,7 @@ void gameLoop::gameOver()
 // Player died: spend a life and restart the level, or game over when out of lives.
 void gameLoop::die()
 {
+    Sfx::play(Sfx::Die);
     m_p->loseLife();
     if (m_p->getLives() > 0)
     {
@@ -274,6 +310,7 @@ void gameLoop::gameTick()
             fb->setPen(QPen(QColor(120, 30, 0), 1));
             fb->setData(0, QStringLiteral("fireball"));
             m_gv->scene->addItem(fb);
+            Sfx::play(Sfx::Fireball);
         }
     }
 
@@ -402,6 +439,7 @@ void gameLoop::gameTick()
                 delete g;
                 m_p->addScore(200);          // killing an enemy increases the score
                 m_p->setVerticalSpeed(-250); // bounce off the top
+                Sfx::play(Sfx::Stomp);
             }
             else
             {

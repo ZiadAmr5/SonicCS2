@@ -4,5 +4,16 @@
         <file>assets/testplatform.png</file>
         <file>assets/mario_frames.png</file>
         <file>assets/nes_atlas.png</file>
+        <file>assets/backdrop.png</file>
+        <file>assets/smb3_jump.wav</file>
+        <file>assets/smb3_coin.wav</file>
+        <file>assets/smb3_power-up.wav</file>
+        <file>assets/smb3_fireball.wav</file>
+        <file>assets/smb3_overworld.wav</file>
+        <file>assets/smb3_stomp.wav</file>
+        <file>assets/smb3_player_down.wav</file>
+        <file>assets/smb3_1-up.wav</file>
+        <file>assets/smb3_level_clear.wav</file>
+        <file>assets/smb3_bump.wav</file>
     </qresource>
 </RCC>

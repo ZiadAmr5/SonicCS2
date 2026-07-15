@@ -1,5 +1,26 @@
 # Credits
 
+## Audio
+
+Sound effects are Super Mario Bros. 3 (NES) rips. `smb3_stomp`, `smb3_player_down`,
+`smb3_1-up`, `smb3_level_clear` and `smb3_bump` were sourced from **The Mushroom Kingdom**:
+
+<https://themushroomkingdom.net/media/smb3/wav>
+
+`assets/smb3_overworld.wav` was generated from the MIDI `assets/smb3_ovr2.mid`
+("Super Mario 3 - Overworld Music 3", sequenced by erik@vbe.com) by rendering it with a
+square/triangle-wave synthesiser to approximate the NES APU.
+
+All music and sound are property of **Nintendo**; used here for a non-commercial
+student project only.
+
+## Background
+
+The sky, clouds and bushes in `assets/backdrop.png` were extracted from the
+**Super Mario Bros. 3 (NES) World 1-1 background** sprite sheet hosted by Mario Universe:
+
+<https://www.mariouniverse.com/sprites-nes-smb3/>
+
 ## Sprites — enemies, items and blocks
 
 Goomba, coin, Super Mushroom, Fire Flower and brick/`?` block sprites

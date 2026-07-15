@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QPainter>
 #include <QPixmap>
+#include "Sfx.h"
 using namespace std;
 
 // Mario sprite sheet layout (assets/mario_frames.png, built from the SMM2/SMB3 sheet):
@@ -134,6 +135,7 @@ Player::Player(QGraphicsItem *parent) : Entity(parent) ,groundSpeed(0)
         velocityY=-(baseJump+momentumBonus);
         isOnGround=false;
         isJumping=true;
+        Sfx::play(Sfx::Jump);
 
 
 
@@ -228,11 +230,12 @@ void Player::collectCoin(Coin* c)
 {
     Q_UNUSED(c);
     coins++;
+    Sfx::play(Sfx::Coin);
 
     if (health < maxHealth) health++;      // gain health
     else                    addScore(100); // full health -> points instead
 
-    if (coins >= 100) { coins -= 100; lives++; }  // 100 coins = +1 life
+    if (coins >= 100) { coins -= 100; lives++; Sfx::play(Sfx::OneUp); }  // 100 coins = +1 life
 
     qDebug() << "coin! coins:" << coins << "health:" << health << "score:" << score << "lives:" << lives;
 }
@@ -242,6 +245,8 @@ void Player::collectCoin(Coin* c)
 void Player::powerUp(PowerState newState)
 {
     const double oldH = rect().height();
+    if (newState != power && newState != PowerState::Small)
+        Sfx::play(Sfx::PowerUp); // only on an actual pick-up, not on reset
     power = newState;
 
     const double newH = (newState == PowerState::Small) ? 40.0 : 80.0; // 1 tile vs 2 tiles

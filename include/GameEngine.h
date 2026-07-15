@@ -67,6 +67,9 @@ public:
     void keyReleaseEvent(QKeyEvent* event) override;
     void renderLevel(level& lev);
 
+    // Paints the NES sky + scrolling scenery behind the level.
+    void drawBackground(QPainter* painter, const QRectF& rect) override;
+
     // Scrolls the view to follow the player each frame (clamped to the world bounds).
     void updateCamera();
 
