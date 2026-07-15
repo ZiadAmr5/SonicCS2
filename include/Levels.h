@@ -32,7 +32,7 @@ inline QVector<LevelData> allLevels()
         "                                                                                                    ",
         "                                      CCCCCC                                                   E    ",
         "   P   CCCCCC            XX           XXXXXX                              CCCCCC         XX    E    ",
-        "         B     M    N    XXXX                 B  N    F  XXXXX          N            N    XXX    E    ",
+        "     T    B     M    N    XXXX      T           B  N    F  XXXXX          N            N    XXX    E    ",
         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"

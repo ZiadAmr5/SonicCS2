@@ -152,6 +152,19 @@ inline void buildLevel(QGraphicsScene* scene, Player* player, const LevelData& l
 
                 scene->addItem(b);
             }
+            else if (ch == QLatin1Char('T'))
+            {
+                auto *pipe = new QGraphicsRectItem();
+
+                pipe->setRect(0,0,64,64);
+                pipe->setBrush(Qt::green);
+
+                pipe->setPos(c * tile, r * tile);
+
+                pipe->setData(0, QStringLiteral("pipe"));
+
+                scene->addItem(pipe);
+            }
         }
     }
 }

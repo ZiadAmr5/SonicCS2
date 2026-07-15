@@ -116,6 +116,10 @@ void gameView::keyPressEvent(QKeyEvent *event)
         if (!event->isAutoRepeat())
             shoot = true; // Fire Mario throws a fireball
     }
+    else if (event->key() == Qt::Key_Down)
+    {
+        pressedKeys.insert(event->key());
+    }
 }
 
 void gameView::keyReleaseEvent(QKeyEvent *event)
@@ -135,6 +139,10 @@ void gameView::keyReleaseEvent(QKeyEvent *event)
         pressedKeys.remove(event->key());
         QGraphicsView::keyReleaseEvent(event);
     } else if (event->key() == Qt::Key_Z) {
+        pressedKeys.remove(event->key());
+    }
+    else if (event->key() == Qt::Key_Down)
+    {
         pressedKeys.remove(event->key());
     }
 }
@@ -491,7 +499,20 @@ void gameLoop::gameTick()
 
         break;
     }
+    // --- Pipes ---
+    for (QGraphicsItem *item : m_gv->scene->collidingItems(m_p))
+    {
+        if (item->data(0).toString() != "pipe")
+            continue;
 
+        if (m_gv->pressedKeys.contains(Qt::Key_Down))
+        {
+            m_p->setPos(1450, 420);
+            m_p->setHorizontalSpeed(0);
+            m_p->setVerticalSpeed(0);
+            break;
+        }
+    }
     // --- Coins: collect on contact (heal / score / extra-life logic lives in Player) ---
     for (QGraphicsItem *item : m_gv->scene->collidingItems(m_p)) {
         if (Coin *coin = dynamic_cast<Coin *>(item)) {
