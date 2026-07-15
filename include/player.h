@@ -28,13 +28,13 @@ private:
     float velocityY = 0.0f;
     float groundSpeed = 0.0f;
 
-    float acceleration = 225.0f;
-    float friction     =450.0f;
-    float gravity      = 0.45f * 60 * 60;
-    float jumpingGravity= 0.12f * 60 * 60;
+    float acceleration = 900.0f;
+    float friction     =1800.0f;
+    float gravity      = 0.45f * 60 * 60*1.5;
+    float jumpingGravity= 0.12f * 60 * 60*1.5;
 
     float maxSpeedWalk = 90.0f;
-    float maxSpeedRun =   150.0f;
+    float maxSpeedRun =   300.0f;
     float maxTerminalVelocity= 5.5f * 60;
     float skidDeceleration = 0.125f * 60 * 60;
     float deltatime;
@@ -53,7 +53,7 @@ private:
 
 public:
     Player(QGraphicsItem* parent = nullptr);
-
+   // void update() { void Player::physUpdate(bool right, bool left, bool jumped, bool jumpHeld,bool runButtonPressed);}
 
     void physUpdate(bool right, bool left, bool jumped, bool jumpHeld,bool runButtonPressed);
 
