@@ -21,8 +21,10 @@ inline void buildLevel(QGraphicsScene* scene, Player* player, const LevelData& l
 {
     const QColor groundFill(150, 90, 45);
     const QColor groundEdge(90, 54, 27);
-    // Brick texture for solid blocks; a texture brush tiles it exactly once per 'tile'-sized block.
-    const QPixmap brickTex = Sprites::tile(Sprites::ITEM_BRICK, Sprites::ROW_ITEM, int(tile));
+    // SMB3 "Expanded Wood" ground: a surface tile where the block is exposed to the sky,
+    // plain wood fill for anything buried underneath.
+    const QPixmap woodTop  = Sprites::woodTile(true,  int(tile));
+    const QPixmap woodFill = Sprites::woodTile(false, int(tile));
 
     const QStringList& map = lvl.map;
     const int rows = map.size();
@@ -43,10 +45,18 @@ inline void buildLevel(QGraphicsScene* scene, Player* player, const LevelData& l
             const QChar ch = row.at(c);
             if (ch == QLatin1Char('X'))
             {
+                // Is the block above this one solid? If not, this is a surface tile.
+                bool covered = false;
+                if (r > 0) {
+                    const QString& above = map.at(r - 1);
+                    covered = (c < above.length() && above.at(c) == QLatin1Char('X'));
+                }
+
                 auto* block = new QGraphicsRectItem(0, 0, tile, tile);
                 block->setPos(c * tile, r * tile);
-                if (!brickTex.isNull()) {          // brick sprite
-                    block->setBrush(QBrush(brickTex));
+                const QPixmap& tex = covered ? woodFill : woodTop;
+                if (!tex.isNull()) {                // wood tileset
+                    block->setBrush(QBrush(tex));
                     block->setPen(Qt::NoPen);
                 } else {                            // fallback: flat brown
                     block->setBrush(QBrush(groundFill));

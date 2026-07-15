@@ -15,5 +15,6 @@
         <file>assets/smb3_1-up.wav</file>
         <file>assets/smb3_level_clear.wav</file>
         <file>assets/smb3_bump.wav</file>
+        <file>assets/wood_tiles.png</file>
     </qresource>
 </RCC>

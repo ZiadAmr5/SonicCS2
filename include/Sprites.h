@@ -34,6 +34,22 @@ inline QPixmap tile(int col, int row, int size = 40)
 enum { GOOMBA_1 = 0, GOOMBA_2 = 1, GOOMBA_FLAT = 2 };
 enum { ROW_ENEMY = 0, ROW_COIN = 1, ROW_ITEM = 2 };
 enum { ITEM_MUSHROOM = 0, ITEM_FLOWER = 1, ITEM_BRICK = 2, ITEM_QBLOCK = 3 };
+
+// --- Ground: SMB3 "Expanded Wood" tileset (assets/wood_tiles.png) ---
+// Two 16x16 cells: [0] = top surface (with the highlight edge), [1] = plain fill.
+inline const QPixmap& woodSheet()
+{
+    static const QPixmap p(QStringLiteral(":/assets/assets/wood_tiles.png"));
+    return p;
+}
+
+// `top` = the block's surface is exposed (nothing solid directly above it).
+inline QPixmap woodTile(bool top, int size = 40)
+{
+    const QPixmap& w = woodSheet();
+    if (w.isNull()) return QPixmap();
+    return w.copy(top ? 0 : 16, 0, 16, 16).scaled(size, size, Qt::IgnoreAspectRatio, Qt::FastTransformation);
+}
 }
 
 #endif // SPRITES_H
