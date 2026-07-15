@@ -4,6 +4,7 @@
 #include "Endpoint.h"
 #include "Coin.h"
 #include "goomba.h"
+#include "Enemy.h"
 #include "PowerUp.h"
 #include "Fireball.h"
 #include <QMessageBox>
@@ -291,9 +292,9 @@ void gameLoop::gameTick()
     m_p->physUpdate(right, left,m_gv->getJump(), jumpheld,run);
     m_gv->clearJump(); // Clear jump trigger flag for next frame
 
-    // Patrol every Goomba in the scene.
+    // Run every enemy's AI (works for any Enemy subclass, not just Goomba).
     for (QGraphicsItem* it : m_gv->scene->items())
-        if (Goomba* g = dynamic_cast<Goomba*>(it)) g->update();
+        if (Enemy* e = dynamic_cast<Enemy*>(it)) e->update();
 
     // --- Fire Mario: throw a fireball on X ---
     if (m_gv->getShoot())
@@ -327,9 +328,10 @@ void gameLoop::gameTick()
 
             for (QGraphicsItem* hit : m_gv->scene->collidingItems(fb))
             {
-                if (Goomba* g = dynamic_cast<Goomba*>(hit))
+                if (Enemy* e = dynamic_cast<Enemy*>(hit))
                 {
-                    dead.insert(g);
+                    e->stomped();       // same "you died" path as a stomp
+                    dead.insert(e);
                     dead.insert(fb);
                     m_p->addScore(200); // fireball kill scores like a stomp
                     break;
@@ -428,22 +430,22 @@ void gameLoop::gameTick()
         // --- Enemies: a stomp from above kills the Goomba (+score); side contact hurts the player ---
         for (QGraphicsItem* item : m_gv->scene->collidingItems(m_p))
         {
-            Goomba* g = dynamic_cast<Goomba*>(item);
-            if (!g) continue;
+            Enemy* e = dynamic_cast<Enemy*>(item);
+            if (!e) continue;
 
-            double enemyTop = g->sceneBoundingRect().top();
-            bool stomped = (vy > 0) && (oldBottom <= enemyTop + 8); // came down onto its head
+            const double enemyTop = e->sceneBoundingRect().top();
+            const bool stomped = (vy > 0) && (oldBottom <= enemyTop + 8); // came down onto its head
             if (stomped)
             {
-                m_gv->scene->removeItem(g);
-                delete g;
-                m_p->addScore(200);          // killing an enemy increases the score
+                m_p->stompEnemy(e);          // scores + tells the enemy it was stomped
+                m_gv->scene->removeItem(e);
+                delete e;
                 m_p->setVerticalSpeed(-250); // bounce off the top
                 Sfx::play(Sfx::Stomp);
             }
             else
             {
-                m_p->takeDamage(1);          // side contact: lose one health point
+                e->hitPlayer(m_p);           // side contact: the enemy hurts the player
                 if (m_p->isDead()) { die(); return; }
             }
             break; // resolve one enemy interaction per frame

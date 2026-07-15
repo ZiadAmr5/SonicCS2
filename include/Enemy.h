@@ -6,20 +6,31 @@
 
 class Player;
 
-// Goomba/Koopa-style enemy: killed by a stomp from above, hurts the player on side contact. SCAFFOLD.
+// Base class for every enemy.  UML: Enemy -> Entity -> GameObject.
+//
+// It owns the shared "walk the level" behaviour so any subclass (Goomba, and later
+// e.g. Bullet Bill) gets it for free: gravity, landing on solid blocks, turning
+// around at walls, and turning around at ledges instead of walking into pits.
+// Subclasses supply their own look (paint) and tuning.
 class Enemy : public Entity
 {
-    QString enemyType;
-    double  speed     = 0.0;
-    int     direction = 1;
-
 public:
     explicit Enemy(QGraphicsItem* parent = nullptr);
 
-    void patrol();
-    void hitPlayer(Player* p);   // side contact -> damage Mario
-    void stomped();              // jumped on from above -> die
-    void destroy();
+    virtual void update();            // one frame of AI - called by the game loop
+    virtual void stomped();           // jumped on from above -> die
+    virtual void hitPlayer(Player* p); // side contact -> hurt the player
+    void         destroy();
+
+    int getDirection() const { return direction; }
+
+protected:
+    void patrol();                    // walk + gravity + wall/ledge turning
+
+    QString enemyType;
+    double  speed     = 1.2;          // px per frame
+    int     direction = -1;           // -1 = left, +1 = right
+    // NOTE: vertical speed uses GameObject::velocityY (inherited).
 };
 
 #endif // ENEMY_H
