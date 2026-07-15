@@ -25,12 +25,42 @@ inline void buildLevel(QGraphicsScene* scene, Player* player, const LevelData& l
     // plain wood fill for anything buried underneath.
     const QPixmap woodTop  = Sprites::woodTile(true,  int(tile));
     const QPixmap woodFill = Sprites::woodTile(false, int(tile));
+    // Floating platforms use the NES brick so they read as platforms, not terrain.
+    const QPixmap brickTex = Sprites::tile(Sprites::ITEM_BRICK, Sprites::ROW_ITEM, int(tile));
 
     const QStringList& map = lvl.map;
     const int rows = map.size();
     int cols = 0;
     for (const QString& row : map)
         cols = qMax(cols, row.length());
+
+    // --- Work out which solid blocks belong to the ground mass ---
+    // Flood-fill from the bottom row: anything connected to it is terrain (wood);
+    // anything left over is a floating platform (brick).
+    auto isX = [&](int r, int c) -> bool {
+        if (r < 0 || r >= rows || c < 0) return false;
+        const QString& s = map.at(r);
+        return c < s.length() && s.at(c) == QLatin1Char('X');
+    };
+    QVector<bool> grounded(rows * cols, false);
+    QVector<int>  stack;
+    for (int c = 0; c < cols; ++c)
+        if (isX(rows - 1, c)) { grounded[(rows - 1) * cols + c] = true; stack.push_back((rows - 1) * cols + c); }
+    while (!stack.isEmpty())
+    {
+        const int idx = stack.takeLast();
+        const int r = idx / cols, c = idx % cols;
+        const int dr[4] = {-1, 1, 0, 0}, dc[4] = {0, 0, -1, 1};
+        for (int k = 0; k < 4; ++k)
+        {
+            const int nr = r + dr[k], nc = c + dc[k];
+            if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+            const int ni = nr * cols + nc;
+            if (grounded[ni] || !isX(nr, nc)) continue;
+            grounded[ni] = true;
+            stack.push_back(ni);
+        }
+    }
 
     scene->setSceneRect(0, 0, cols * tile, rows * tile);
 
@@ -45,17 +75,18 @@ inline void buildLevel(QGraphicsScene* scene, Player* player, const LevelData& l
             const QChar ch = row.at(c);
             if (ch == QLatin1Char('X'))
             {
-                // Is the block above this one solid? If not, this is a surface tile.
-                bool covered = false;
-                if (r > 0) {
-                    const QString& above = map.at(r - 1);
-                    covered = (c < above.length() && above.at(c) == QLatin1Char('X'));
-                }
-
                 auto* block = new QGraphicsRectItem(0, 0, tile, tile);
                 block->setPos(c * tile, r * tile);
-                const QPixmap& tex = covered ? woodFill : woodTop;
-                if (!tex.isNull()) {                // wood tileset
+
+                QPixmap tex;
+                if (grounded[r * cols + c]) {
+                    // Terrain: wood. Surface tile if nothing solid sits directly above.
+                    tex = isX(r - 1, c) ? woodFill : woodTop;
+                } else {
+                    tex = brickTex;  // floating platform -> brick
+                }
+
+                if (!tex.isNull()) {
                     block->setBrush(QBrush(tex));
                     block->setPen(Qt::NoPen);
                 } else {                            // fallback: flat brown
