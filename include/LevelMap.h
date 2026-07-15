@@ -12,6 +12,7 @@
 #include "PowerUp.h"
 #include "LevelData.h"
 #include "Sprites.h"
+#include "bbill.h"
 
 // Spawns a LevelData's tile map into the scene: solid block per 'X', coin per 'C',
 // Goomba per 'N', goal per 'E', player at 'P'; sizes the world to fit the map.
@@ -141,6 +142,15 @@ inline void buildLevel(QGraphicsScene* scene, Player* player, const LevelData& l
             else if (ch == QLatin1Char('P') && player)
             {
                 player->setPos(c * tile, r * tile);
+            }
+            else if (ch == QLatin1Char('B'))
+            {
+                auto *b = new BBill();
+
+                b->setPos(c * tile, r * tile);
+                b->setData(0, QStringLiteral("enemy"));
+
+                scene->addItem(b);
             }
         }
     }
