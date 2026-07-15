@@ -4,8 +4,11 @@
 #include "Endpoint.h"
 #include "Coin.h"
 #include "goomba.h"
+#include "PowerUp.h"
+#include "Fireball.h"
 #include <QMessageBox>
 #include <QLabel>
+#include <QSet>
 
 gameView::gameView(Player* p, level* l, QWidget* parent)
     : scene(nullptr), mp(p), QGraphicsView(parent),
@@ -89,6 +92,10 @@ void gameView::keyPressEvent(QKeyEvent* event)
     {
         pressedKeys.insert(event->key());
     }
+    else if(event->key()==Qt::Key_X)
+    {
+        if (!event->isAutoRepeat()) shoot = true; // Fire Mario throws a fireball
+    }
 }
 
 void gameView::keyReleaseEvent(QKeyEvent *event)
@@ -156,12 +163,18 @@ void gameView::updateCamera()
 void gameView::updateHud()
 {
     if (!hud || !mp) return;
-    hud->setText(QStringLiteral("Score: %1    Coins: %2/100    Lives: %3    Health: %4/%5")
+
+    QString powerName = QStringLiteral("Small");
+    if (mp->getPower() == PowerState::Big)  powerName = QStringLiteral("Big");
+    if (mp->getPower() == PowerState::Fire) powerName = QStringLiteral("Fire");
+
+    hud->setText(QStringLiteral("Score: %1    Coins: %2/100    Lives: %3    Health: %4/%5    Power: %6")
                      .arg(mp->getScore())
                      .arg(mp->getCoins())
                      .arg(mp->getLives())
                      .arg(mp->getHealth())
-                     .arg(mp->getMaxHealth()));
+                     .arg(mp->getMaxHealth())
+                     .arg(powerName));
     hud->adjustSize();
 }
 
@@ -204,6 +217,7 @@ void gameLoop::die()
     m_p->loseLife();
     if (m_p->getLives() > 0)
     {
+        m_p->resetPower();  // dying drops you back to Small Mario
         m_p->resetHealth();
         m_gv->loadLevel(m_gv->currentLevel); // retry the current level
     }
@@ -217,6 +231,7 @@ void gameLoop::die()
 void gameLoop::goToLevel(int index)
 {
     m_finished = false;
+    m_p->resetPower();
     m_p->resetHealth();
     m_gv->loadLevel(index);
     if (!frameRate.isActive())
@@ -243,6 +258,51 @@ void gameLoop::gameTick()
     // Patrol every Goomba in the scene.
     for (QGraphicsItem* it : m_gv->scene->items())
         if (Goomba* g = dynamic_cast<Goomba*>(it)) g->update();
+
+    // --- Fire Mario: throw a fireball on X ---
+    if (m_gv->getShoot())
+    {
+        m_gv->clearShoot();
+        if (m_p->canShoot())
+        {
+            const int dir = m_p->getFacing();
+            auto* fb = new Fireball(dir * 420.0);
+            fb->setRect(0, 0, 14, 14);
+            const QRectF pr = m_p->sceneBoundingRect();
+            fb->setPos(dir > 0 ? pr.right() + 2 : pr.left() - 16, pr.center().y() - 7);
+            fb->setBrush(QBrush(QColor(255, 80, 0)));
+            fb->setPen(QPen(QColor(120, 30, 0), 1));
+            fb->setData(0, QStringLiteral("fireball"));
+            m_gv->scene->addItem(fb);
+        }
+    }
+
+    // --- Fireballs: move, kill Goombas, despawn on walls / when spent ---
+    {
+        QSet<QGraphicsItem*> dead;
+        for (QGraphicsItem* it : m_gv->scene->items())
+        {
+            Fireball* fb = dynamic_cast<Fireball*>(it);
+            if (!fb) continue;
+
+            fb->step(deltatime);
+            if (fb->expired()) { dead.insert(fb); continue; }
+
+            for (QGraphicsItem* hit : m_gv->scene->collidingItems(fb))
+            {
+                if (Goomba* g = dynamic_cast<Goomba*>(hit))
+                {
+                    dead.insert(g);
+                    dead.insert(fb);
+                    m_p->addScore(200); // fireball kill scores like a stomp
+                    break;
+                }
+                if (hit->data(0).toString() == "solid") { dead.insert(fb); break; }
+            }
+        }
+        // delete after iterating so we never touch a freed pointer
+        for (QGraphicsItem* it : dead) { m_gv->scene->removeItem(it); delete it; }
+    }
 
     double vx = m_p->getHorizontalSpeed();
     double vy = m_p->getVerticalSpeed();
@@ -359,6 +419,18 @@ void gameLoop::gameTick()
                 m_p->collectCoin(coin);
                 m_gv->scene->removeItem(coin);
                 delete coin;
+            }
+        }
+
+        // --- Power-ups: Super Mushroom / Fire Flower on contact ---
+        for (QGraphicsItem* item : m_gv->scene->collidingItems(m_p))
+        {
+            if (PowerUp* pu = dynamic_cast<PowerUp*>(item))
+            {
+                pu->apply(m_p);   // Mushroom -> Big, Fire Flower -> Fire
+                m_gv->scene->removeItem(pu);
+                delete pu;
+                break;
             }
         }
 

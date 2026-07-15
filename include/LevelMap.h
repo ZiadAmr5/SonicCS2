@@ -9,6 +9,7 @@
 #include "Endpoint.h"
 #include "Coin.h"
 #include "goomba.h"
+#include "PowerUp.h"
 #include "LevelData.h"
 
 // Spawns a LevelData's tile map into the scene: solid block per 'X', coin per 'C',
@@ -73,6 +74,20 @@ inline void buildLevel(QGraphicsScene* scene, Player* player, const LevelData& l
                 g->setPos(c * tile, r * tile);
                 g->setData(0, QStringLiteral("enemy"));
                 scene->addItem(g);
+            }
+            else if (ch == QLatin1Char('M') || ch == QLatin1Char('F'))
+            {
+                const bool mushroom = (ch == QLatin1Char('M'));
+                const double s = tile * 0.7;
+                auto* pu = new PowerUp(mushroom ? PowerUp::PowerType::Mushroom
+                                                : PowerUp::PowerType::FireFlower);
+                pu->setRect(0, 0, s, s);
+                pu->setPos(c * tile + (tile - s) / 2.0, r * tile + (tile - s) / 2.0);
+                pu->setBrush(QBrush(mushroom ? QColor(220, 50, 50)    // red mushroom
+                                             : QColor(255, 140, 0))); // orange flower
+                pu->setPen(QPen(QColor(255, 255, 255), 2));
+                pu->setData(0, QStringLiteral("powerup"));
+                scene->addItem(pu);
             }
             else if (ch == QLatin1Char('P') && player)
             {

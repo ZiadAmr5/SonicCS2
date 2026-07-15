@@ -51,9 +51,17 @@ private:
     bool isInvincible     = false;
     int  invincibleFrames = 0;   // remaining i-frames after taking a hit
 
+    int    facing   = 1;         // last horizontal direction (+1 right, -1 left), for fireballs
+    double animTime = 0.0;       // advances with distance travelled; drives the walk cycle
+
+    int currentFrame() const;    // 0 idle | 1-3 walk | 4 jump
+
 public:
     Player(QGraphicsItem* parent = nullptr);
    // void update() { void Player::physUpdate(bool right, bool left, bool jumped, bool jumpHeld,bool runButtonPressed);}
+
+    // Draws the Mario sprite (Small/Big/Fire) instead of a plain rectangle.
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
     void physUpdate(bool right, bool left, bool jumped, bool jumpHeld,bool runButtonPressed);
 
@@ -81,6 +89,11 @@ public:
 
     void loseLife()    { if (lives > 0) lives--; }                 // on death, spend a life
     void resetHealth() { health = maxHealth; isInvincible = false; invincibleFrames = 0; }
+    void resetPower()  { powerUp(PowerState::Small); }             // back to Small Mario
+
+    PowerState getPower()  const { return power; }
+    bool       canShoot()  const { return power == PowerState::Fire; }
+    int        getFacing() const { return facing; }
 
     int  getLives()     const { return lives; }
     int  getCoins()     const { return coins; }

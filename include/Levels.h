@@ -8,7 +8,9 @@
 //  ====>  ALL LEVELS LIVE HERE  <====
 //  Each LevelData below is one level. To add another level, instantiate a new
 //  LevelData, fill in its map, and add it to the returned list.
-//  Symbols: X solid | P start | E goal | C coin | N enemy | (space) empty
+//
+//  Symbols:  X solid | P start | E goal | C coin | N enemy (Goomba)
+//            M Super Mushroom (grow) | F Fire Flower (shoot with X) | (space) empty
 // =============================================================================
 inline QVector<LevelData> allLevels()
 {
@@ -19,12 +21,12 @@ inline QVector<LevelData> allLevels()
         "                              XXXXXXX                                         XXXXXXX               ",
         "                                                                                                    ",
         "            XXXXX                       XXXX              XXXXX                         XXXXX       ",
-        "      xxxx          XXXX                                             XXXX                           ",
+        "                 XXXX                                             XXXX                              ",
         "                     XXXXX                                              XXXXX                       ",
-        "       xxxx                                                                                         ",
-        "   P                          ccccc                                                             E   ",
-        "XXXXXXXXX                    XXXXXXXX         CCCCCCC         XXXXXXXX                          E   ",
-        "XXXXXXXXXXXXX  N          cccc        XXXXXXXX CCCCCCC     N                   XXXXXXXX         E   ",
+        "                                                                                                    ",
+        "   P                                                                                           E    ",
+        "XXXXXXXXX                    XXXXXXXX         CCCCCCC         XXXXXXXX                         E    ",
+        "XXXXXXXXXXXXXXXXX M N   CCCCC        XXXXXXXX CCCCCCC  F  N                   XXXXXXXX         E    ",
         "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXX",
         "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXX",
         "XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXX"
@@ -42,7 +44,7 @@ inline QVector<LevelData> allLevels()
         "                                        CCCCCCC                                           ",
         "   P                                    XXXXXXX                                        E  ",
         "                                                                                       E  ",
-        "                  XXXXX          CCNCCCC                    N XXXXX        N           E  ",
+        "          M       XXXXX          CCNCCCC     F              N XXXXX        N           E  ",
         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
@@ -60,7 +62,7 @@ inline QVector<LevelData> allLevels()
         "                                        CCCCCC                        XXXXXX                                  ",
         "   P                                                                                                     E    ",
         "                         CCCCCC                                                      XXXXXX              E    ",
-        "               N                        N         XXXXXXXXX CCCCCNCCCC                              N    E    ",
+        "        M      N              F         N         XXXXXXXXX CCCCCNCCCC                              N    E    ",
         "XXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "XXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
         "XXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"

@@ -35,6 +35,7 @@ set(PROJECT_SOURCES
         src/MovingPlatform.cpp   include/MovingPlatform.h
         src/Endpoint.cpp         include/Endpoint.h
         src/goomba.cpp           include/goomba.h
+        src/Fireball.cpp         include/Fireball.h
         include/LevelMap.h
         include/LevelData.h
         include/Levels.h

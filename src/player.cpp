@@ -3,14 +3,22 @@
 #include "Enemy.h"
 #include "Coin.h"
 #include <QDebug>
+#include <QPainter>
+#include <QPixmap>
 using namespace std;
+
+// Mario sprite sheet layout (assets/mario_frames.png, built from the SMM2/SMB3 sheet):
+//   5 frames per row: 0 = idle, 1-3 = walk cycle, 4 = jump
+//   row y-offsets:    Small y=0 h=16 | Big y=16 h=32 | Fire y=48 h=32
+static const int  SPR_W     = 20;   // frame width in the sheet
+static const double SPR_SCALE = 2.5; // 16px tall sprite -> 40px tile
 //quick player rectangle for testing ( I think it is obvious where this came from, except velocityX and y)
 Player::Player(QGraphicsItem *parent) : Entity(parent) ,groundSpeed(0)
 {
-    // Define a 40 width x 60 height rectangle placeholder
-    setRect(0, 0, 40, 60);
+    // Small Mario is one tile (40x40); the sprite is drawn over this hitbox in paint().
+    setRect(0, 0, 40, 40);
 
-    // Make it solid blue
+    // Fallback colour if the sprite sheet is missing
     setBrush(QBrush(QColor(0, 100, 255)));
     setPen(QPen(Qt::NoPen)); // Removes the black outline border
     qDebug()<<"setting player in position.";
@@ -25,6 +33,10 @@ Player::Player(QGraphicsItem *parent) : Entity(parent) ,groundSpeed(0)
      //qDebug()<<"calling the physics function";
      //qDebug()<<"Falling to the ground";
      tickInvincibility(); // count down i-frames each frame
+     if (right)     facing = 1;   // remember which way we're facing (fireball direction)
+     else if (left) facing = -1;
+     // advance the walk cycle with distance travelled, so it speeds up when running
+     animTime += deltatime * abs(velocityX) / 15.0;
      bool jumpingThisFrame = jumped && isOnGround;
      double slopeFactor =0.125;
      float currentMaxSpeed= runButtonPressed? maxSpeedRun:maxSpeedWalk;
@@ -159,6 +171,48 @@ Player::Player(QGraphicsItem *parent) : Entity(parent) ,groundSpeed(0)
 }
 
 
+// Which sprite frame to show: jump when airborne, walk cycle when moving, else idle.
+int Player::currentFrame() const
+{
+    if (!isOnGround)            return 4;                       // jump
+    if (abs(velocityX) > 5.0f)  return 1 + (int(animTime) % 3); // walk cycle
+    return 0;                                                   // idle
+}
+
+void Player::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
+{
+    static const QPixmap sheet(QStringLiteral(":/assets/assets/mario_frames.png"));
+
+    if (sheet.isNull()) { // sprite sheet missing -> fall back to the plain coloured box
+        painter->setBrush(brush());
+        painter->setPen(pen());
+        painter->drawRect(rect());
+        return;
+    }
+
+    // pick the row for the current power state
+    int srcY = 0, srcH = 16;
+    if (power == PowerState::Big)  { srcY = 16; srcH = 32; }
+    if (power == PowerState::Fire) { srcY = 48; srcH = 32; }
+    const QRect src(currentFrame() * SPR_W, srcY, SPR_W, srcH);
+
+    // Draw at a fixed scale (square pixels) anchored to the bottom-centre of the hitbox,
+    // so the sprite lines up with the feet regardless of hitbox size.
+    const QRectF box = rect();
+    const double w = SPR_W * SPR_SCALE;
+    const double h = srcH  * SPR_SCALE;
+    const QRectF dst(box.center().x() - w / 2.0, box.bottom() - h, w, h);
+
+    painter->save();
+    if (facing < 0) { // mirror horizontally about the sprite's centre
+        painter->translate(dst.center().x(), 0);
+        painter->scale(-1, 1);
+        painter->translate(-dst.center().x(), 0);
+    }
+    painter->drawPixmap(dst, sheet, src);
+    painter->restore();
+}
+
 // --- UML gameplay behaviour (Mario) ---
 
 void Player::addScore(int points) { score += points; }
@@ -183,7 +237,29 @@ void Player::collectCoin(Coin* c)
     qDebug() << "coin! coins:" << coins << "health:" << health << "score:" << score << "lives:" << lives;
 }
 
-void Player::powerUp(PowerState newState) { power = newState; /* TODO: grow/fire visuals */ }
+// Apply a power-up state: Small (base), Big (mushroom) or Fire (fire flower).
+// Big/Fire Mario is taller and can take one extra hit; Fire Mario can shoot fireballs.
+void Player::powerUp(PowerState newState)
+{
+    const double oldH = rect().height();
+    power = newState;
+
+    const double newH = (newState == PowerState::Small) ? 40.0 : 80.0; // 1 tile vs 2 tiles
+    setRect(0, 0, 40, newH);
+    // keep the feet planted when growing/shrinking
+    setPos(pos().x(), pos().y() - (newH - oldH));
+
+    maxHealth = (newState == PowerState::Small) ? 2 : 3;
+    health    = maxHealth; // a power-up refills you
+
+    switch (newState)
+    {
+    case PowerState::Small: setBrush(QBrush(QColor(0, 100, 255))); break; // blue
+    case PowerState::Big:   setBrush(QBrush(QColor(220, 50, 50)));  break; // red
+    case PowerState::Fire:  setBrush(QBrush(QColor(255, 140, 0)));  break; // orange
+    }
+    qDebug() << "power-up! state:" << int(newState) << "maxHealth:" << maxHealth;
+}
 
 // Lose one health point. Grants brief invincibility so a single contact costs one hit.
 void Player::takeDamage(int amount)

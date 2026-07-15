@@ -51,6 +51,7 @@ private:
     bool DownKeyPressed;
     bool jumped = false;
     bool jumpHeld = false;
+    bool shoot = false;   // edge-triggered fireball request (X)
     double deltatime;
     double scaleFactor;
 
@@ -87,6 +88,9 @@ public:
     bool isJumpHeld()   { return jumpHeld; }
 
     void clearJump()    { jumped = false; }
+
+    bool getShoot()     { return shoot; }
+    void clearShoot()   { shoot = false; }
 };
 
 #endif // GAMEENGINE_H
