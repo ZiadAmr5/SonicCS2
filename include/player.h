@@ -33,7 +33,7 @@ private:
     float gravity      = 0.45f * 60 * 60*1.5;
     float jumpingGravity= 0.12f * 60 * 60*1.5;
 
-    float maxSpeedWalk = 90.0f;
+    float maxSpeedWalk = 200.0f;
     float maxSpeedRun =   300.0f;
     float maxTerminalVelocity= 5.5f * 60;
     float skidDeceleration = 0.125f * 60 * 60;
@@ -90,6 +90,7 @@ public:
     void loseLife()    { if (lives > 0) lives--; }                 // on death, spend a life
     void resetHealth() { health = maxHealth; isInvincible = false; invincibleFrames = 0; }
     void resetPower()  { powerUp(PowerState::Small); }             // back to Small Mario
+    void resetLives(){lives =3;}
 
     PowerState getPower()  const { return power; }
     bool       canShoot()  const { return power == PowerState::Fire; }

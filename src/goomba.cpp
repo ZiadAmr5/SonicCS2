@@ -26,9 +26,9 @@ void Goomba::update()
     Enemy::update();   // gravity + walk + wall/ledge turning
 }
 
-void Goomba::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
+void Goomba::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    const QPixmap& a = Sprites::atlas();
+    const QPixmap &a = Sprites::atlas();
     if (a.isNull()) { // atlas missing -> fall back to the plain box
         painter->setBrush(brush());
         painter->setPen(pen());

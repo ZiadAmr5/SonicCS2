@@ -1,6 +1,9 @@
 #include "Fireball.h"
 
-Fireball::Fireball(double speedX, QGraphicsItem* parent) : GameObject(parent), speed(speedX) {}
+Fireball::Fireball(double speedX, QGraphicsItem *parent)
+    : GameObject(parent)
+    , speed(speedX)
+{}
 
 void Fireball::step(double dt)
 {

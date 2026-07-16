@@ -1,6 +1,6 @@
 #include "level.h"
 
-void level::loadFromUiScene(QGraphicsScene* scene)
+void level::loadFromUiScene(QGraphicsScene *scene)
 {
     // Clear out any old level memory
     collisionBoundaries.clear();
@@ -10,17 +10,15 @@ void level::loadFromUiScene(QGraphicsScene* scene)
     this->lengthpx = scene->sceneRect().height();
 
     //  Loop through every single object painted on the  UI workspace canvas
-    for (QGraphicsItem* item : scene->items())
-    {
+    for (QGraphicsItem *item : scene->items()) {
         //   look for standard rectangle blocks
-        if (QGraphicsRectItem* rectItem = qgraphicsitem_cast<QGraphicsRectItem*>(item))
-        {
+        if (QGraphicsRectItem *rectItem = qgraphicsitem_cast<QGraphicsRectItem *>(item)) {
             //dont detect the player
-            if (rectItem->data(0).toString() == "player") continue;
+            if (rectItem->data(0).toString() == "player")
+                continue;
 
             collisionBoundary boundary;
             boundary.shape = collisionBoundary::Rectangle;
-
 
             QRectF sceneRect = rectItem->mapToScene(rectItem->rect()).boundingRect();
 
@@ -29,9 +27,8 @@ void level::loadFromUiScene(QGraphicsScene* scene)
             boundary.w = sceneRect.width();
             boundary.l = sceneRect.height();
 
-
-            boundary.name = rectItem->data(1).toString().isEmpty() ? "solid_block" : rectItem->data(1).toString();
-
+            boundary.name = rectItem->data(1).toString().isEmpty() ? "solid_block"
+                                                                   : rectItem->data(1).toString();
 
             collisionBoundaries.append(boundary);
         }

@@ -11,7 +11,9 @@ static bool isSolid(const QGraphicsItem* it)
     return it->data(0).toString() == QLatin1String("solid");
 }
 
-Enemy::Enemy(QGraphicsItem* parent) : Entity(parent) {}
+Enemy::Enemy(QGraphicsItem *parent)
+    : Entity(parent)
+{}
 
 void Enemy::update()
 {
@@ -45,7 +47,7 @@ void Enemy::patrol()
     {
         if (!isSolid(it)) continue;
         const QRectF b = it->sceneBoundingRect();
-        if (velocityY > 0) {                        // landed on top
+        if (velocityY > 0) {                     // landed on top
             setPos(x(), b.top() - rect().height());
             onGround = true;
         } else if (velocityY < 0) {                 // bonked its head

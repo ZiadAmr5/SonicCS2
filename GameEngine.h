@@ -3,14 +3,11 @@
 
 #endif // GAMEENGINE_H
 
-#include <QTimer>
 #include <QElapsedTimer>
-#include <QSet>
 #include <QKeyEvent>
+#include <QSet>
+#include <QTimer>
 class gameLoop
 {
-    QSet<QKeyEvent>pressedKeys;
-
-
-
+    QSet<QKeyEvent> pressedKeys;
 };

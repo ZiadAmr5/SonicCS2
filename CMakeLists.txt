@@ -52,6 +52,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         include/level.h
         src/level.cpp
         include/RayHit.h
+        src/bbill.cpp
+        include/bbill.h
 
 
     )

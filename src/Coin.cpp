@@ -1,14 +1,16 @@
 #include "Coin.h"
-#include "player.h"
-#include "Sprites.h"
-#include <QPainter>
 #include <QElapsedTimer>
+#include <QPainter>
+#include "Sprites.h"
+#include "player.h"
 
-Coin::Coin(QGraphicsItem* parent) : GameObject(parent) {}
+Coin::Coin(QGraphicsItem *parent)
+    : GameObject(parent)
+{}
 
-void Coin::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
+void Coin::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    const QPixmap& a = Sprites::atlas();
+    const QPixmap &a = Sprites::atlas();
     if (a.isNull()) { // atlas missing -> fall back to the plain box
         painter->setBrush(brush());
         painter->setPen(pen());
@@ -17,7 +19,8 @@ void Coin::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
     }
     // One shared clock so every coin in the level spins in sync.
     static QElapsedTimer clock;
-    if (!clock.isValid()) clock.start();
+    if (!clock.isValid())
+        clock.start();
 
     // frames 0,1,2,1 give a smooth back-and-forth spin
     static const int seq[4] = {0, 1, 2, 1};
@@ -26,4 +29,9 @@ void Coin::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
     painter->drawPixmap(rect(), a, Sprites::cell(frame, Sprites::ROW_COIN));
 }
 
-void Coin::collect(Player* p) { Q_UNUSED(p); collected = true; setIsActive(false); /* TODO: p->collectCoin(this) */ }
+void Coin::collect(Player *p)
+{
+    Q_UNUSED(p);
+    collected = true;
+    setIsActive(false); /* TODO: p->collectCoin(this) */
+}

@@ -54,6 +54,9 @@ private:
     bool shoot = false;   // edge-triggered fireball request (X)
     double deltatime;
     double scaleFactor;
+     bool downPressed = false;
+
+
 
 public:
      QSet<int> pressedKeys;
@@ -94,6 +97,7 @@ public:
 
     bool getShoot()     { return shoot; }
     void clearShoot()   { shoot = false; }
+
 };
 
 #endif // GAMEENGINE_H
